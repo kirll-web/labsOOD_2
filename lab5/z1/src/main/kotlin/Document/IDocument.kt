@@ -2,7 +2,6 @@ package Document
 
 import DocumentItem.IConstDocumentItem
 import DocumentItem.IDocumentItem
-import IDocumentItem.IConstDocumentItem
 import Image.IImage
 import Paragraph.IParagraph
 
@@ -11,13 +10,13 @@ interface IDocument
 
     // Вставляет параграф текста в указанную позицию (сдвигая последующие элементы)
     // Если параметр position не указан, вставка происходит в конец документа
-    fun insertParagraph(text: String, position: Int?): IParagraph
+    fun insertParagraph(text: String, position: Int): IParagraph
 
     // Вставляет изображение в указанную позицию (сдвигая последующие элементы)
     // Параметр path задает путь к вставляемому изображению
     // При вставке изображение должно копироваться в подкаталог images
     // под автоматически сгенерированным именем
-    fun insertImage(path: String, width: Int, height: Int, position: Int?): IImage
+    fun insertImage(path: String, width: Int, height: Int, position: Int): IImage
 
     // Возвращает количество элементов в документе
     fun getItemsCount(): Int
@@ -33,11 +32,10 @@ interface IDocument
     fun getTitle(): String
     // Изменяет заголовок документа
     fun setTitle(title: String)
-
-    // Сообщает о доступности операции Undo
     fun canUndo(): Boolean
+    // Сообщает о доступности операции Undo
     // Отменяет команду редактирования
-    fun Undo()
+    fun undo()
 
     // Сообщает о доступности операции Redo
     fun canRedo(): Boolean

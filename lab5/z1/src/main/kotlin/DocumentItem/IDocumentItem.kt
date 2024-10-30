@@ -5,9 +5,9 @@ import Paragraph.IParagraph
 
 interface IConstDocumentItem  {
     // Возвращает указатель на константное изображение, либо nullptr, если элемент не является изображением
-    fun getImage(): IImage
+    fun getImage(): IImage?
     // Возвращает указатель на константный параграф, либо nullptr, если элемент не является параграфом
-    fun getParagraph(): IParagraph
+    fun getParagraph(): IParagraph?
 }
 
 /*
@@ -17,7 +17,7 @@ interface IDocumentItem : IConstDocumentItem
 {
 
     // Возвращает указатель на изображение, либо nullptr, если элемент не является изображением
-    override fun getImage(): IImage
+    override fun getImage(): IImage?
     // Возвращает указатель на параграф, либо nullptr, если элемент не является параграфом
-    override fun getParagraph(): IParagraph
+    override fun getParagraph(): IParagraph?
 }
