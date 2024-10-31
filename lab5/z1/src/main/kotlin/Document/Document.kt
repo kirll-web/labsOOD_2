@@ -4,13 +4,18 @@ import DocumentItem.IConstDocumentItem
 import DocumentItem.IDocumentItem
 import Image.IImage
 import Paragraph.IParagraph
+import History.History
+
 
 class Document : IDocument {
-    override fun insertParagraph(text: String, position: Int?): IParagraph {
-        TODO("Not yet implemented")
+    val mHistory = History()
+    var mTitle = ""
+
+    override fun insertParagraph(text: String, position: Int): IParagraph {
+        mHistory.addAndExecuteCommand()
     }
 
-    override fun insertImage(path: String, width: Int, height: Int, position: Int?): IImage {
+    override fun insertImage(path: String, width: Int, height: Int, position: Int): IImage {
         TODO("Not yet implemented")
     }
 
@@ -57,5 +62,4 @@ class Document : IDocument {
     override fun save(path: String) {
         TODO("Not yet implemented")
     }
-
 }
