@@ -17,12 +17,13 @@ class Test {
 
         val draft = designer.mockCreateDraft(listOf(
             "AddShape rectangle black 0 0 100 100",
-            "AddShape circle black 0 0 100 100",
+            "AddShape circle black 0 0 100 100", //неверная команда
+            "AddShape ellipse black 0 0 100 100",
             "exit"
         ))
 
-        assertEquals(draft.getShapeCount(),1)
-        assertNotEquals(draft.getShapeCount(),2)
+        assertEquals(draft.getShapeCount(),2)
+        assertNotEquals(draft.getShapeCount(),1)
     }
     @Test
     fun testCreateRectangle() {
