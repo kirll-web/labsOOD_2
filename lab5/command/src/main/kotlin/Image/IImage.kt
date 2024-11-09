@@ -4,7 +4,7 @@ import java.nio.file.Path
 
 interface IImage {
     // Возвращает путь относительно каталога документа
-    fun getString(): Path
+    fun getString(): String
 
     // Ширина изображения в пикселях
     fun getWidth(): Int

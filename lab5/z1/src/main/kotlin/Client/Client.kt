@@ -3,28 +3,31 @@ package Client
 import Core.Core
 import Document.Document
 import Document.IDocument
-import DocumentItem.IConstDocumentItem
 import Ext.isInt
 import Ext.isListInt
 import Image.IImage
 import Menu.Menu
 import Paragraph.IParagraph
 import java.io.File
+import kotlin.io.path.Path
+import kotlin.io.path.exists
+import kotlin.io.path.extension
 
 class Client {
     private val mMenu = Menu()
-    private val mDocument: IDocument = Document()
+    private val mDocument: IDocument
+    private val mTempFolder: File
 
     init {
         mMenu.addItem(
-            "insert paragraph",
+            "insertParagraph",
             "insertParagraph"
         ) { input ->
             insertParagraph(input)
         }
 
         mMenu.addItem(
-            "insert image",
+            "insertImage",
             "insertImage"
         ) { input ->
             insertImage(input)
@@ -66,14 +69,14 @@ class Client {
         }
 
         mMenu.addItem(
-            "replace text",
+            "replaceText",
             "replaceText"
         ) { input ->
             replaceText(input)
         }
 
         mMenu.addItem(
-            "resize image",
+            "resizeImage",
             "resizeImage"
         ) { input ->
             resizeImage(input)
@@ -92,6 +95,10 @@ class Client {
         ) { _ ->
             help()
         }
+
+        mTempFolder = createFolder()
+
+        mDocument = Document(mTempFolder)
     }
 
     fun run() = mMenu.run()
@@ -105,8 +112,7 @@ class Client {
         }
 
         val positionString = args[0]
-
-        if(!positionString.isInt() || positionString != END) {
+        if(!positionString.isInt() && positionString != END) {
             print("Position is not a number")
             return
         }
@@ -134,7 +140,7 @@ class Client {
 
         val positionString = args[0]
 
-        if(!positionString.isInt() || positionString != END) {
+        if(!positionString.isInt() && positionString != END) {
             print("Position is not a number")
             return
         }
@@ -163,7 +169,7 @@ class Client {
 
         val positionString = args[0]
 
-        if(!positionString.isInt() || positionString != END) {
+        if(!positionString.isInt() && positionString != END) {
             print("Position is not a number")
             return
         }
@@ -172,9 +178,9 @@ class Client {
 
         when {
             isPositionInRange(position) -> {
-                val item = mDocument.getItem(position).getImage()
+                val item = mDocument.getItem(position)?.getImage()
 
-                mDocument.deleteItem(mDocument.getItem(position))
+                mDocument.getItem(position)?.let { mDocument.deleteItem(it) }
             }
 
             else -> {
@@ -192,7 +198,7 @@ class Client {
         }
         val positionString = args[0]
 
-        if(!positionString.isInt() || positionString != END) {
+        if(!positionString.isInt() && positionString != END) {
             print("Position is not a number")
             return
         }
@@ -207,7 +213,7 @@ class Client {
 
         when {
             isPositionInRange(position) -> {
-                val item = mDocument.getItem(position).getImage()
+                val item = mDocument.getItem(position)?.getImage()
 
                 when {
                     item != null -> item.resize(width, height)
@@ -234,7 +240,7 @@ class Client {
 
         val positionString = args[0]
 
-        if(!positionString.isInt() || positionString != END) {
+        if(!positionString.isInt() && positionString != END) {
             print("Position is not a number")
             return
         }
@@ -245,7 +251,7 @@ class Client {
 
         when {
             isPositionInRange(position) -> {
-                val item = mDocument.getItem(position).getParagraph()
+                val item = mDocument.getItem(position)?.getParagraph()
 
                 when {
                     item != null -> item.setText(text)
@@ -267,7 +273,7 @@ class Client {
         println("Title: ${mDocument.getTitle()}")
         for (i in 0 until mDocument.getItemsCount()) {
             print("${i + 1}. ")
-            val item = mDocument.getItem(i).getParagraph() ?: mDocument.getItem(i).getImage()
+            val item = mDocument.getItem(i)?.getParagraph() ?: mDocument.getItem(i)?.getImage()
             when (item) {
                 is IParagraph -> println("Paragraph: ${item.getText()}")
                 is IImage -> println("Paragraph: ${item.getWidth()} ${item.getHeight()} ${item.getString()}")
@@ -316,6 +322,28 @@ class Client {
             print("Args is not enough for save")
             return
         }
+
+        val path = Path(input)
+
+        if (path.exists()) {
+            println("File already exists")
+            return
+        }
+
+        if (path.extension != "html") {
+            println("Invalid extension")
+            return
+        }
+
+        val parentPath = path.parent
+        val imageFolderName = "${parentPath}\\${path}_images"
+
+        val file = File(imageFolderName)
+        if (file.exists()) {
+            file.mkdirs()
+        }
+
+        Core.saveToHtml(mDocument, file, Path(imageFolderName))
     }
 
     private fun parsePosition(positionString: String) = when {
@@ -325,13 +353,15 @@ class Client {
 
     private fun isPositionInRange(position: Int) = mDocument.getItemsCount() > position
 
-    private fun createFolder()  {
+    private fun createFolder(): File {
         val directory = File(Core.generateRandomFileName(Core.MAX_LENGTH_TEMP_NAME))
         if (directory.exists()) {
             directory.delete()
         }
 
         directory.mkdirs()
+
+        return directory
     }
 
     companion object {

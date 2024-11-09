@@ -1,0 +1,4 @@
+InsertParagraph 0 <script>alert(123;)</script>
+InsertParagraph 1 <script>alert(123;)</script>
+InsertParagraph 2 <script>alert(123;)</script>
+save C:\Users\regha\Рабочий стол\2\index.html

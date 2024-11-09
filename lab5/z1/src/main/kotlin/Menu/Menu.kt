@@ -11,10 +11,10 @@ data class MenuItem(
 )
 
 class Menu {
-    private var mMenuItems = listOf<MenuItem>()
+    private var mMenuItems = mutableListOf<MenuItem>()
     private var mCanExit = false
     fun addItem(name: String, description: String, command: FPCommand) {
-        mMenuItems = mMenuItems.plus(
+        mMenuItems.add(
             MenuItem(
                 name = name,
                 description = description,
@@ -43,7 +43,7 @@ class Menu {
 
     private fun executeCommand(commandLine: String) {
         val args = commandLine.trim().split(" ")
-        if(args.size == 0) {
+        if(args.isEmpty()) {
             println("Incorrect  input")
             return
         }

@@ -3,14 +3,14 @@ package Command
 abstract class AbstractCommand: ICommand {
     private var mExecuted = false
     override fun execute() {
-        DoExecute()
+        doExecute()
         mExecuted = true
     }
     override fun unexecute() {
-        DoExecute()
+        doExecute()
         mExecuted = true
     }
 
-    fun DoExecute() = 0;
-    fun DoUnexecute() = 0;
+    abstract fun doExecute()
+    abstract fun doUnexecute()
 }

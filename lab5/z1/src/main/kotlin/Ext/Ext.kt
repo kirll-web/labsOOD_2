@@ -1,7 +1,7 @@
 package Ext
 
 fun String.isInt(): Boolean = try {
-    val n = this.toInt()
+    this.toInt()
     true
 } catch (ex: Exception) {
     false

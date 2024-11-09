@@ -1,6 +1,7 @@
+import Client.Client
 
 
-fun main()
-{
-
+fun main() {
+    val client = Client()
+    client.run()
 }
