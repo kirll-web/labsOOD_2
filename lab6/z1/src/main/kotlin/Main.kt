@@ -1,6 +1,7 @@
 package org.command
 
-import org.command.Adapter.AdapterModernLibToOldLib
+import org.command.Adapter.ModernGraphicsAdapter
+import org.command.Adapter.ModernGraphicsClassAdapter
 import org.command.graphics_lib.Canvas
 import org.command.modern_graphics_lib.ModernGraphicsRenderer
 import org.command.shape_drawing_lib.CanvasPainter
@@ -13,12 +14,14 @@ fun paintPicture(painter: CanvasPainter) {
     val triangle = Triangle(
         Point(10, 15),
         Point(100, 300),
-        Point(150, 250)
+        Point(150, 250),
+        0x3F3F3Fu
     )
     val rectangle = Rectangle(
         Point(30, 40),
         width = 18,
-        height = 24
+        height = 24,
+        0x000000u
     )
 
     painter.draw(rectangle)
@@ -32,13 +35,20 @@ fun paintPictureOnCanvas() {
 }
 
 fun paintPictureOnModernGraphicsRenderer() {
-    AdapterModernLibToOldLib(ModernGraphicsRenderer(System.out)).use { adapter ->
+    val renderer = ModernGraphicsRenderer(System.out)
+    renderer.beginDraw()
+    ModernGraphicsAdapter(renderer).use { adapter ->
         val painter = CanvasPainter(adapter)
 
         paintPicture(painter)
     }
-}
 
+    ModernGraphicsClassAdapter(System.out).use { adapter ->
+        adapter.beginDraw()
+        val painter = CanvasPainter(adapter)
+        paintPicture(painter)
+    }
+}
 
 //TODO НАПИСАТЬ ЮНИТ ТЕСТЫ.  МОЖНО ПРОТЕСТИТЬ НА EXCEPTION. ПРИДУМАТЬ, КАК ПРОТЕСТИТЬ ВЫВОДИМЫЕ ДАННЫЕ
 // МОЖНО ВЫВОДИТЬ ВСЁ В ФАЙЛ И ПРОВЕРЯТЬ НА СООТВЕТСТВИЕ

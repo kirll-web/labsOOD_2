@@ -8,4 +8,14 @@ class Canvas : ICanvas {
     override fun lineTo(x: Int,y: Int) {
         println("LineTo ($x,$y)")
     }
+
+    override fun setColor(rgbColor: UInt) {
+       println(uintToHexColor(rgbColor))
+    }
+
+    companion object {
+        fun uintToHexColor(color: UInt): String {
+            return String.format("#%06X", color.toInt() and 0xFFFFFF)
+        }
+    }
 }
