@@ -9,10 +9,11 @@ import java.text.DecimalFormat
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
+//странно что адаптер не позволяет сделать beginDraw, но позволяет endDraw
 class ModernGraphicsAdapter(
     private val modernLib: ModernGraphicsRenderer
 ) : ICanvas, Closeable {
-    private var mCursor = Point(0, 0)
+    private var mCursor = Point(9, 0)
     private var mColor = RGBAColor(0F, 0F, 0F, 0F)
 
     override fun moveTo(x: Int, y: Int) {
@@ -25,9 +26,10 @@ class ModernGraphicsAdapter(
         modernLib.drawLine(oldCursor, mCursor, mColor)
     }
 
+    //todo цвет тестируется недостаточно хорошо
     override fun setColor(rgbColor: UInt) {
         mColor = RGBAColor(
-            r = (rgbColor shr 16 and 0xFFu).toFloat() / 255.0f,
+            r = (rgbColor shr 8 and 0xFFu).toFloat() / 255.0f,
             g = (rgbColor shr 8 and 0xFFu).toFloat() / 255.0f,
             b = (rgbColor and 0xFFu).toFloat() / 255.0f,
             a = 1.0F
