@@ -3,7 +3,6 @@ package ViewModel
 import View.ICanvas
 import ViewModel.Styles.FillStyle
 import ViewModel.Styles.StrokeStyle
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 
 abstract class Shape(
@@ -21,8 +20,14 @@ abstract class Shape(
 
         val offsetLeft = frame.left - oldFrame.left
         val offsetTop = frame.top - oldFrame.top
-        val scaleWidth = frame.width / oldFrame.width
-        val scaleHeight = frame.height / oldFrame.height
+        val scaleWidth = frame.width / when {
+            oldFrame.width == 0 -> 1
+            else -> oldFrame.width
+        }
+        val scaleHeight = frame.height / when {
+            oldFrame.height == 0 -> 1
+            else -> oldFrame.height
+        }
         println("${scaleWidth} ${scaleHeight}")
         setFrameImpl(RectI(offsetLeft, offsetTop, scaleWidth, scaleHeight))
     }

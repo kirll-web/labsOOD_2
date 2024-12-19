@@ -1,6 +1,6 @@
 package View
 
-import ViewModel.CanvasViewModel
+import ViewModel.IMenuViewModel
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.Button
@@ -11,7 +11,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun ToolBar(
-    canvasViewModel: CanvasViewModel,
+    canvasViewModel: IMenuViewModel,
     toolbarHeight: Int,
 ) {
     Row(Modifier.fillMaxWidth().padding(8.dp).height(toolbarHeight.dp)) {

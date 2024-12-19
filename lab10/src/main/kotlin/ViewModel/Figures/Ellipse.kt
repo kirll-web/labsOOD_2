@@ -5,7 +5,6 @@ import ViewModel.RectI
 import ViewModel.Shape
 import ViewModel.Styles.FillStyle
 import ViewModel.Styles.StrokeStyle
-import androidx.compose.ui.graphics.Color
 
 
 class Ellipse(
@@ -23,8 +22,8 @@ class Ellipse(
     override fun setFrameImpl(frame: RectI) {
         mLeft += frame.left
         mTop += frame.top
-        mWidth *= frame.width
-        mHeight *= frame.height
+        mWidth += frame.width
+        mHeight += frame.height
     }
 
     override fun getFrameImpl() = RectI(mLeft, mTop, mWidth, mHeight)

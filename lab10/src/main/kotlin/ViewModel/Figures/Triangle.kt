@@ -24,37 +24,27 @@ class Triangle(
     private var mTop = points.top.y
     private var mWidth = points.rightBottom.x - mLeft
     private var mHeight = points.rightBottom.y - mTop
-    fun getPoints() = points
 
 
     override fun setFrameImpl(frame: RectI) {
-        // Найти текущие границы треугольника
-        // Вычислить коэффициенты масштабирования
         mLeft += frame.left
         mTop += frame.top
-        mWidth *= frame.width
-        mHeight *= frame.height
-
-
-        // Масштабировать и переместить точки
-        val leftBottom = Point(
-            x = mLeft,
-            y = mTop + mHeight
-        )
-        val top = Point(
-            x = mLeft + mWidth / 2,
-            y = mTop
-        )
-        val rightBottom = Point(
-            x = mLeft + mWidth,
-            y = mTop + mHeight
-        )
-
-        mWidth = points.rightBottom.x - mLeft
-        mHeight = points.rightBottom.y - mTop
+        mWidth += frame.width
+        mHeight += frame.height
 
         points = TrianglePoints(
-            leftBottom,top,rightBottom
+            leftBottom = Point(
+                x = mLeft,
+                y = mTop + mHeight
+            ),
+            top = Point(
+                x = mLeft + mWidth / 2,
+                y = mTop
+            ),
+            rightBottom = Point(
+                x = mLeft + mWidth,
+                y = mTop + mHeight
+            )
         )
     }
 

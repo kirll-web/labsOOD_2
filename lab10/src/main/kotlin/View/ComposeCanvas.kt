@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 fun Int.dp() = this.dp.value.toInt()
 
 
-class Canvas(
+class ComposeCanvas(
     private val viewModel: ICanvasViewModel
 ) : ICanvas {
     private val mViewModelState by viewModel.state
@@ -32,8 +32,6 @@ class Canvas(
     private var mFillColor: RGBAColor? = DEFAULT_COLOR
     private var mStrokeColor: RGBAColor? = DEFAULT_COLOR
     private var mStrokeWidth = DEFAULT_STROKE_WIDTH
-    val shapes
-        get() = mShapes
 
     override fun setStrokeColor(color: RGBAColor?) {
         val it = mShapes.lastOrNull()
@@ -133,7 +131,7 @@ class Canvas(
         }) {
             mShapes = emptyList()
             mViewModelState.shapes.values.forEach {
-                it.draw(this@Canvas)
+                it.draw(this@ComposeCanvas)
             }.apply {
                 Canvas(
                     Modifier.fillMaxSize().pointerInput(Unit) {
@@ -215,6 +213,6 @@ class Canvas(
 
     companion object {
         const val DEFAULT_STROKE_WIDTH = 1u
-        val DEFAULT_COLOR = (0xFF000000).toULong() // fixme
+        val DEFAULT_COLOR = Color.Black.value
     }
 }
