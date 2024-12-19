@@ -11,4 +11,5 @@ open class ConstDocumentItem(
     private val mParagraph: IParagraph? = paragraph
     open fun getImage() = mImage
     open fun getParagraph() = mParagraph
+    open fun remove() {}
 }

@@ -37,21 +37,15 @@ class Test {
         assertEquals(doc.getTitle(), testTitle3)
 
         doc.undo()
-        assertEquals(doc.getTitle(), testTitle2)
-        doc.undo()
-        assertEquals(doc.getTitle(), testTitle1)
+        assertEquals(doc.getTitle(), defaultTitle)
         doc.undo()
         assertEquals(doc.getTitle(), defaultTitle)
         doc.undo()
         assertEquals(doc.getTitle(), defaultTitle)
 
-        doc.redo()
-        assertEquals(doc.getTitle(), testTitle1)
-
-        doc.redo()
-        assertEquals(doc.getTitle(), testTitle2)
         doc.redo()
         assertEquals(doc.getTitle(), testTitle3)
+
         doc.redo()
         assertEquals(doc.getTitle(), testTitle3)
     }
@@ -84,21 +78,23 @@ class Test {
         val file = Path(createTempDirectory().pathString)
         val doc = Document(file)
 
+        println("print image path. example: C:\\Users\regha\\Рабочий стол\\2\\2.jpg")
+        val pathImage = readln()
         assertThrows<Exception> {
-            doc.insertImage("C:\\Users\\regha\\Рабочий стол\\2\\2.jpg", 50, 50, 1)
+            doc.insertImage(pathImage, 50, 50, 1)
         }
         assertThrows<Exception> {
-            doc.insertImage("C:\\Users\\regha\\Рабочий стол\\2\\2.jpg", 50, 50, 5)
+            doc.insertImage(pathImage, 50, 50, 5)
         }
         assertThrows<Exception> {
-            doc.insertImage("C:\\Users\\regha\\Рабочий стол\\2\\2.jpg", 50, 50, 1)
+            doc.insertImage(pathImage, 50, 50, 1)
         }
 
         assertDoesNotThrow {
-            doc.insertImage("C:\\Users\\regha\\Рабочий стол\\2\\2.jpg", 50, 50, 0)
-            doc.insertImage("C:\\Users\\regha\\Рабочий стол\\2\\2.jpg", 50, 50, 1)
-            doc.insertImage("C:\\Users\\regha\\Рабочий стол\\2\\2.jpg", 50, 50, 2)
-            doc.insertImage("C:\\Users\\regha\\Рабочий стол\\2\\2.jpg", 50, 50, 1)
+            doc.insertImage(pathImage, 50, 50, 0)
+            doc.insertImage(pathImage, 50, 50, 1)
+            doc.insertImage(pathImage, 50, 50, 2)
+            doc.insertImage(pathImage, 50, 50, 1)
         }
     }
 
@@ -144,9 +140,11 @@ class Test {
 
     @Test
     fun testDeleteImageInTempDirectory() {
-        val file = Path("C:\\Users\\regha\\Рабочий стол\\2\\test")
+        println("print folder path. example: C:\\Users\\regha\\абочий стол\\2\\test")
+        val file = Path(readln())
         val doc = Document(file)
-        val pathImage = "C:\\Users\\regha\\Рабочий стол\\2\\2.jpg"
+        println("print image path. example: C:\\Users\regha\\Рабочий стол\\2\\2.jpg")
+        val pathImage = readln()
         val list = mutableListOf<IImage>()
         list.add(doc.insertImage(pathImage, 150, 150, 0))
         list.add(doc.insertImage(pathImage, 150, 150, 1))
@@ -163,9 +161,12 @@ class Test {
 
     @Test
     fun testDeleteImageInTempDirectory1() {
-        val file = Path("C:\\Users\\regha\\Рабочий стол\\2\\test")
+        //абсолютных путей не должно быть
+        println("print folder path. example: C:\\Users\\regha\\абочий стол\\2\\test")
+        val file = Path(readln())
         val doc = Document(file)
-        val pathImage = "C:\\Users\\regha\\Рабочий стол\\2\\2.jpg"
+        println("print image path. example: C:\\Users\regha\\Рабочий стол\\2\\2.jpg")
+        val pathImage = readln()
         val list = mutableListOf<IImage>()
         list.add(doc.insertImage(pathImage, 150, 150, 0))
         list.add(doc.insertImage(pathImage, 150, 150, 1))

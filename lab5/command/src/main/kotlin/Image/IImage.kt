@@ -14,4 +14,5 @@ interface IImage {
 
     // Изменяет размер изображения
     fun resize(width: Int, height: Int)
+    fun remove()
 }

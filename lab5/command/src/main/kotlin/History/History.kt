@@ -31,11 +31,7 @@ class History : ICommandExecutor {
                 command.execute()
                 val removeCommands = mCommands.slice(mNextCommandIndex  until mCommands.size)
                 removeCommands.forEach {
-                    if(it is InsertCommand) {
-                        it.value.getImage()?.let { image ->
-                            File(image.getString()).delete()
-                        }
-                    }
+                    it.removeCommand()
                 }
                 mCommands = mCommands.slice(0 until  mNextCommandIndex).toMutableList()
                 ++mNextCommandIndex
@@ -46,20 +42,17 @@ class History : ICommandExecutor {
                 try {
                     command.execute()
                     if(mCommands.size == MAX_COMMANDS_SIZE) {
-                        mCommands.removeFirst()
+                        val command = mCommands.removeFirst()
+                        command.removeCommand()
                         --mNextCommandIndex
                     }
 
-                    when {
-                        mCommands.isNotEmpty() && itemsBelongSameClass(command, mCommands.last()) -> {
-                            println("Склейка")
-                            mCommands.removeLast()
-                            mCommands.addLast(command)
-                        }
-
-                        else -> mCommands.addLast(command)
+                    //переписать условие большее понятно
+                    if (!(mCommands.isNotEmpty() && mCommands.last().tryMergeWith(command))) {
+                        mCommands.addLast(command)
+                        ++mNextCommandIndex
                     }
-                    ++mNextCommandIndex
+
                 } catch (ex: Exception) {
                     println(ex.message)
                 }
@@ -87,5 +80,4 @@ class History : ICommandExecutor {
     companion object {
         private const val MAX_COMMANDS_SIZE = 10
     }
-
 }

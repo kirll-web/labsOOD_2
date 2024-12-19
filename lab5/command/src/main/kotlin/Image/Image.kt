@@ -2,6 +2,7 @@ package Image
 
 import org.command.Command.ICommandExecutor
 import org.command.Command.ResizeImageCommand
+import java.io.File
 
 class Image(
     private val path: String,
@@ -11,7 +12,6 @@ class Image(
 ) : IImage {
     private var mWidth = width
     private var mHeight = height
-
 
     // Возвращает путь относительно каталога документа
     override fun getString(): String = path
@@ -33,6 +33,15 @@ class Image(
                 { mWidth = oldWidth; mHeight = oldHeight }
             )
         )
+    }
+
+    override fun remove() {
+        val file = when {
+            File(path).exists() -> File(path)
+            else -> return
+        }
+
+        file.delete()
     }
 
 }

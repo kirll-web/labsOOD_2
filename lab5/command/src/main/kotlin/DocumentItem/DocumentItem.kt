@@ -22,4 +22,8 @@ class DocumentItem(
     override fun getParagraph(): IParagraph? {
         return mParagraph
     }
+
+    override fun remove() {
+        mImage?.remove()
+    }
 }

@@ -4,8 +4,8 @@ abstract class FunctionalCommand(
     doExecute: () -> Unit,
     doUnexecute: () -> Unit
 ): AbstractCommand() {
-    private val mDoExecute = doExecute
-    private val mDoUnexecute = doUnexecute
+    private var mDoExecute = doExecute
+    private var mDoUnexecute = doUnexecute
 
     override fun doExecute() {
         mDoExecute()
@@ -13,5 +13,15 @@ abstract class FunctionalCommand(
 
     override fun doUnexecute() {
         mDoUnexecute()
+    }
+
+    override fun tryMergeWith(other: ICommand) = when {
+        other.javaClass.name == this.javaClass.name ->  {
+            mDoExecute = {
+                other.execute()
+            }
+            true
+        }
+        else -> false
     }
 }

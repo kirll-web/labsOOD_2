@@ -264,7 +264,7 @@ class Client {
         val path = Path(input)
 
         if (path.exists()) {
-            println("File already exists")
+            println("File is not exists")
             return
         }
 
@@ -273,7 +273,6 @@ class Client {
             return
         }
 
-        val parentPath = path.parent
         val imageFolderName = "${path.parent}/images"
 
         val imageFolder = File(imageFolderName)

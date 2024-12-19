@@ -34,4 +34,8 @@ class InsertCommand(
             }
         }
     }
+
+    override fun removeCommand() {
+        mValue.remove()
+    }
 }

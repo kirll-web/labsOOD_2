@@ -22,6 +22,5 @@ class DeleteItemCommand(
             items = newList.toList()
         }
     }
-
 }
 
