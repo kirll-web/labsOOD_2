@@ -7,7 +7,7 @@ import ViewModel.Styles.FillStyle
 import ViewModel.Styles.StrokeStyle
 import androidx.compose.ui.graphics.Color
 
-class Rectangle(
+class TargetShape(
     id: String,
     rect: RectI,
     strokeStyle: StrokeStyle,
@@ -27,16 +27,25 @@ class Rectangle(
     }
 
     override fun isPickImpl(x: Float, y: Float): Boolean {
-        return x.toInt() in mLeft..mLeft + mWidth && y.toInt() in mTop..mTop + mHeight
+        return false // fixme
     }
 
     override fun getFrameImpl() = RectI(mLeft, mTop, mWidth, mHeight)
 
     override fun drawImpl(canvas: ICanvas) {
+        canvas.setStrokeColor(Color.Black.value)
+        canvas.setStrokeWidth(5u)
         canvas.moveTo(mLeft, mTop)
         canvas.lineTo(mLeft + mWidth, mTop)
         canvas.lineTo(mLeft + mWidth, mTop + mHeight)
         canvas.lineTo(mLeft, mTop + mHeight)
         canvas.lineTo(mLeft, mTop)
+        canvas.endFill()
+        canvas.setStrokeWidth(1u)
+        canvas.beginFill(Color.White.value)
+        canvas.drawEllipse(mLeft + mWidth, mTop + mHeight, SIZE_FRAME_POINTS, SIZE_FRAME_POINTS)
+        canvas.endFill()
+        canvas.setStrokeColor(null)
+        canvas.setStrokeWidth(0u)
     }
 }

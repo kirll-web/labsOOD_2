@@ -8,4 +8,6 @@ interface IShapeImpl {
     fun getFrameImpl(): RectI
 
     fun drawImpl(canvas: ICanvas)
+
+    fun isPickImpl(x: Float, y: Float): Boolean
 }

@@ -1,7 +1,7 @@
 package View
 
 import RGBAColor
-import ViewModel.ICanvasViewModel
+import ViewModel.IComposeCanvasViewModel
 import ViewModel.Point
 import ViewModel.getOffset
 import androidx.compose.foundation.Canvas
@@ -24,7 +24,7 @@ fun Int.dp() = this.dp.value.toInt()
 
 
 class ComposeCanvas(
-    private val viewModel: ICanvasViewModel
+    private val viewModel: IComposeCanvasViewModel
 ) : ICanvas {
     private val mViewModelState by viewModel.state
     private var mCursor = Point(0, 0)
@@ -68,7 +68,6 @@ class ComposeCanvas(
                     strokeWidth = width
                 )
             )
-
         } else {
             mShapes = mShapes.plus(
                 Primitive.Stroke(

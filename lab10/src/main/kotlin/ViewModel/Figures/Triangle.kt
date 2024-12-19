@@ -48,6 +48,32 @@ class Triangle(
         )
     }
 
+    override fun isPickImpl(x: Float, y: Float): Boolean = with(points){
+        // Вершины треугольника
+        val ax = mLeft.toFloat()
+        val ay = (mTop + mHeight).toFloat()
+        val bx = (mLeft + mWidth).toFloat()
+        val by = (mTop + mHeight).toFloat()
+        val cx = (mLeft + mWidth / 2).toFloat()
+        val cy = mTop.toFloat()
+
+        // Функция для вычисления площади треугольника
+        fun triangleArea(x1: Float, y1: Float, x2: Float, y2: Float, x3: Float, y3: Float): Float {
+            return Math.abs((x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)) / 2f)
+        }
+
+        // Площадь исходного треугольника
+        val originalArea = triangleArea(ax, ay, bx, by, cx, cy)
+
+        // Сумма площадей трёх треугольников
+        val area1 = triangleArea(x, y, bx, by, cx, cy)
+        val area2 = triangleArea(ax, ay, x, y, cx, cy)
+        val area3 = triangleArea(ax, ay, bx, by, x, y)
+
+        // Проверяем, равна ли сумма площадей исходной площади
+        return (area1 + area2 + area3) == originalArea
+    }
+
     override fun getFrameImpl(): RectI = RectI(
         mLeft, mTop, mWidth, mHeight
     )
@@ -58,4 +84,6 @@ class Triangle(
         canvas.lineTo(points.rightBottom.x, points.rightBottom.y)
         canvas.lineTo(points.leftBottom.x, points.leftBottom.y)
     }
+
+
 }

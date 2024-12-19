@@ -13,6 +13,7 @@ abstract class Shape(
 ): IShape, IShapeImpl {
     private var mStrokeStyle: StrokeStyle = strokeStyle
     private var mFillStyle: FillStyle = fillStyle
+
     override fun getFrame(): RectI = getFrameImpl()
 
     override fun setFrame(frame: RectI) {
@@ -28,11 +29,12 @@ abstract class Shape(
             oldFrame.height == 0 -> 1
             else -> oldFrame.height
         }
-        println("${scaleWidth} ${scaleHeight}")
         setFrameImpl(RectI(offsetLeft, offsetTop, scaleWidth, scaleHeight))
     }
 
     abstract override fun setFrameImpl(frame: RectI)
+
+    abstract override fun isPickImpl(x: Float, y: Float): Boolean
 
     abstract override fun getFrameImpl(): RectI
 
@@ -57,6 +59,7 @@ abstract class Shape(
         canvas.setStrokeColor(null)
         canvas.setStrokeWidth(0u)
 
+        //fixme вынести отрисовку рамки в отдельный shape
         if (isSelect) {
             canvas.setStrokeColor(Color.Black.value)
             canvas.setStrokeWidth(5u)
@@ -74,6 +77,8 @@ abstract class Shape(
             canvas.setStrokeWidth(0u)
         }
     }
+
+    override fun isPick(x: Float, y: Float): Boolean = isPickImpl(x, y)
 
     companion object {
         const val SIZE_FRAME_POINTS = 7

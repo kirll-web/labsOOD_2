@@ -1,20 +1,20 @@
 import Models.Models
 import View.ComposeCanvas
-import View.ToolBar
+import View.Toolbar
 import ViewModel.ComposeCanvasViewModel
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
 
-const val WINDOW_WIDTH = 800
-const val WINDOW_HEIGHT = 600
+const val WINDOW_WIDTH = 1024
+const val WINDOW_HEIGHT = 1024
 const val DEFAULT_WIDTH = 200
 const val DEFAULT_HEIGHT = 200
 const val TOOLBAR_HEIGHT = 50
@@ -33,10 +33,11 @@ fun App() {
         DEFAULT_HEIGHT
     )
     val canvas = ComposeCanvas(composeCanvasViewModel)
+    val toolbar = Toolbar(composeCanvasViewModel, TOOLBAR_HEIGHT)
 
     MaterialTheme {
         Column(modifier = Modifier.fillMaxSize()) {
-            ToolBar(composeCanvasViewModel, TOOLBAR_HEIGHT)
+            toolbar.draw()
             canvas.draw()
         }
     }

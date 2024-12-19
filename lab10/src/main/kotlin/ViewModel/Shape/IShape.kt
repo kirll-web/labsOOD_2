@@ -9,4 +9,5 @@ interface IShape : IDrawable{
     fun setFrame(frame: RectI)
     fun getStrokeStyle(): IStrokeStyle
     fun getFillStyle(): IFillStyle
+    fun isPick(x: Float, y: Float): Boolean
 }

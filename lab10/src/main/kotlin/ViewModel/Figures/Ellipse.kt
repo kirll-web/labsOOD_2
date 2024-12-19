@@ -36,4 +36,19 @@ class Ellipse(
             mHeight
         )
     }
+
+    override fun isPickImpl(x: Float, y: Float): Boolean {
+        val centerX = mLeft + mWidth / 2
+        val centerY = mTop + mHeight / 2
+
+        // Радиусы эллипса
+        val a = mWidth / 2
+        val b = mHeight / 2
+
+        // Проверяем, находится ли точка внутри эллипса
+        val normalizedX = (x - centerX) / a
+        val normalizedY = (y - centerY) / b
+        println("$x $y $centerX $centerY $a $b $normalizedX $normalizedY")
+        return normalizedX * normalizedX + normalizedY * normalizedY < 1
+    }
 }
