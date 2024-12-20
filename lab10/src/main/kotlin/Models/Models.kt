@@ -1,54 +1,75 @@
 package Models
 
+import Command.AddShapeCommand
+import Command.DeleteItemCommand
+import Command.MoveShapeCommand
+import History.History
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 
+//переименовать
 interface IModels {
     val shapes: StateFlow<Map<String, ModelShape>>
     fun addShape(shape: ModelShape, position: Int? = null)
     fun updateShape(shape: ModelShape)
     fun removeShapeById(id: String)
+    fun undo()
+    fun redo()
 }
 
 class Models: IModels {
     private val mShapes = MutableStateFlow(mapOf<String, ModelShape>())
+    private val mHistory = History()
+
     override val shapes: StateFlow<Map<String, ModelShape>> = mShapes
 
     override fun addShape(shape: ModelShape, position: Int?) {
-        when {
-            position == null -> {
-                mShapes.value = mShapes.value.toMap().plus(shape.id to shape)
-            }
-
-            else ->  {
-                val newShapes = mutableMapOf<String, ModelShape>()
-                var index = 0
-                mShapes.value.forEach {
-                    if (position == index) {
-                        newShapes[shape.id] = shape
-                    }
-                    newShapes[it.key] = it.value
-                    index += 1
-                }
-                if (position > mShapes.value.values.size) {
-                    newShapes[shape.id] = shape
-                }
-
-                mShapes.value = newShapes
-            }
-        }
+        mHistory.addAndExecuteCommand(
+            AddShapeCommand(mShapes, shape, position)
+        )
     }
 
+    //replayShape переименовать
     override fun updateShape(shape: ModelShape) {
-        mShapes.value = mShapes.value.toMutableMap().apply {
-            this[shape.id] = shape
+        val oldShape = mShapes.value[shape.id]
+
+        oldShape?.let {
+            mHistory.addAndExecuteCommand(
+                MoveShapeCommand(
+                    {
+                        mShapes.value = mShapes.value.toMutableMap().apply {
+                            this[shape.id] = shape
+                        }
+                    },
+                    {
+                        mShapes.value = mShapes.value.toMutableMap().apply {
+                            this[shape.id] = oldShape
+                        }
+                    }
+                )
+            )
         }
     }
 
     override fun removeShapeById(id: String) {
-        mShapes.value[id]?.let {
-            mShapes.value = mShapes.value.toMap().minus(id)
+        mShapes.value[id]?.let { shape ->
+            mHistory.addAndExecuteCommand(
+                //FIXME если выделенная фигура была удалена, то она должна стать выделенной при undo
+                DeleteItemCommand(mShapes, shape, mShapes.value.keys.indexOf(shape.id))
+            )
+        }
+    }
+
+    override fun undo() {
+        if (mHistory.canUndo()) {
+            mHistory.undo()
+        }
+    }
+
+    override fun redo() {
+        if (mHistory.canRedo()) {
+            mHistory.redo()
         }
     }
 }

@@ -13,10 +13,10 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
 
-const val WINDOW_WIDTH = 1024
-const val WINDOW_HEIGHT = 1024
-const val DEFAULT_WIDTH = 200
-const val DEFAULT_HEIGHT = 200
+const val WINDOW_WIDTH = 1024f
+const val WINDOW_HEIGHT = 1024f
+const val DEFAULT_WIDTH = 200f
+const val DEFAULT_HEIGHT = 200f
 const val TOOLBAR_HEIGHT = 50
 
 typealias RGBAColor = ULong

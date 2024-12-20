@@ -18,16 +18,12 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.unit.dp
-
-fun Int.dp() = this.dp.value.toInt()
-
 
 class ComposeCanvas(
     private val viewModel: IComposeCanvasViewModel
 ) : ICanvas {
     private val mViewModelState by viewModel.state
-    private var mCursor = Point(0, 0)
+    private var mCursor = Point(0f, 0f)
     private var mShapes: List<Primitive> = listOf()
     private var mFillColor: RGBAColor? = DEFAULT_COLOR
     private var mStrokeColor: RGBAColor? = DEFAULT_COLOR
@@ -94,13 +90,13 @@ class ComposeCanvas(
         )
     }
 
-    override fun moveTo(x: Int, y: Int) {
-        mCursor = Point(x.dp(), y.dp())
+    override fun moveTo(x: Float, y: Float) {
+        mCursor = Point(x, y)
     }
 
-    override fun lineTo(x: Int, y: Int) {
-        val f = getOffset(mCursor.x.dp(), mCursor.y.dp())
-        val s = getOffset(x.dp(), y.dp())
+    override fun lineTo(x: Float, y: Float) {
+        val f = getOffset(mCursor.x.toInt(), mCursor.y.toInt())
+        val s = getOffset(x.toInt(), y.toInt())
         mShapes = mShapes.plus(
             Primitive.Line(
                 start = f,
@@ -111,12 +107,12 @@ class ComposeCanvas(
         moveTo(x, y)
     }
 
-    override fun drawEllipse(cx: Int, cy: Int, rx: Int, ry: Int) {
+    override fun drawEllipse(cx: Float, cy: Float, rx: Float, ry: Float) {
         mShapes = mShapes.plus(
             Primitive.Ellipse(
-                topLeft = getOffset(cx.dp(), cy.dp()),
-                rx = rx.dp(),
-                ry = ry.dp()
+                topLeft = getOffset(cx.toInt(), cy.toInt()),
+                rx = rx.toInt(),
+                ry = ry.toInt()
             )
         )
     }
@@ -140,8 +136,8 @@ class ComposeCanvas(
                              },
                             onDragCancel = {},
                             onDragEnd = {viewModel.onDragEnd()},
-                            onDrag = { _, dragAmount ->
-                                viewModel.onDrag(dragAmount.x, dragAmount.y)
+                            onDrag = { c, dragAmount ->
+                                viewModel.onDrag(c.position.x, c.position.y, dragAmount.x, dragAmount.y)
                             }
                         )
 

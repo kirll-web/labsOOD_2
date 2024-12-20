@@ -2,7 +2,7 @@ package ViewModel.Figures
 
 import View.ICanvas
 import ViewModel.Point
-import ViewModel.RectI
+import ViewModel.RectFloat
 import ViewModel.Shape
 import ViewModel.Styles.FillStyle
 import ViewModel.Styles.StrokeStyle
@@ -26,11 +26,11 @@ class Triangle(
     private var mHeight = points.rightBottom.y - mTop
 
 
-    override fun setFrameImpl(frame: RectI) {
+    override fun setFrameImpl(frame: RectFloat) {
         mLeft += frame.left
         mTop += frame.top
-        mWidth += frame.width
-        mHeight += frame.height
+        mWidth *= frame.width
+        mHeight *= frame.height
 
         points = TrianglePoints(
             leftBottom = Point(
@@ -48,14 +48,14 @@ class Triangle(
         )
     }
 
-    override fun isPickImpl(x: Float, y: Float): Boolean = with(points){
+    override fun hitTestImpl(x: Float, y: Float): Boolean = with(points){
         // Вершины треугольника
-        val ax = mLeft.toFloat()
-        val ay = (mTop + mHeight).toFloat()
-        val bx = (mLeft + mWidth).toFloat()
-        val by = (mTop + mHeight).toFloat()
-        val cx = (mLeft + mWidth / 2).toFloat()
-        val cy = mTop.toFloat()
+        val ax = mLeft
+        val ay = (mTop + mHeight)
+        val bx = (mLeft + mWidth)
+        val by = (mTop + mHeight)
+        val cx = (mLeft + mWidth / 2)
+        val cy = mTop
 
         // Функция для вычисления площади треугольника
         fun triangleArea(x1: Float, y1: Float, x2: Float, y2: Float, x3: Float, y3: Float): Float {
@@ -74,7 +74,7 @@ class Triangle(
         return (area1 + area2 + area3) == originalArea
     }
 
-    override fun getFrameImpl(): RectI = RectI(
+    override fun getFrameImpl(): RectFloat = RectFloat(
         mLeft, mTop, mWidth, mHeight
     )
 

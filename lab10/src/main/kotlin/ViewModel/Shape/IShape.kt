@@ -5,9 +5,9 @@ import ViewModel.Styles.IStrokeStyle
 
 interface IShape : IDrawable{
     val id: String
-    fun getFrame(): RectI
-    fun setFrame(frame: RectI)
+    fun getFrame(): RectFloat
+    fun setFrame(frame: RectFloat): IShape
     fun getStrokeStyle(): IStrokeStyle
     fun getFillStyle(): IFillStyle
-    fun isPick(x: Float, y: Float): Boolean
+    fun hitTest(x: Float, y: Float): Boolean
 }

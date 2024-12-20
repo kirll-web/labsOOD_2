@@ -3,11 +3,11 @@ package ViewModel
 import View.ICanvas
 
 interface IShapeImpl {
-    fun setFrameImpl(frame: RectI)
+    fun setFrameImpl(frame: RectFloat)
 
-    fun getFrameImpl(): RectI
+    fun getFrameImpl(): RectFloat
 
     fun drawImpl(canvas: ICanvas)
 
-    fun isPickImpl(x: Float, y: Float): Boolean
+    fun hitTestImpl(x: Float, y: Float): Boolean
 }

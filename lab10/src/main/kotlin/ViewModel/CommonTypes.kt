@@ -6,4 +6,4 @@ data class Rect<T>(
     val width: T,
     val height: T
 )
-typealias RectI = Rect<Int>
+typealias RectFloat = Rect<Float>

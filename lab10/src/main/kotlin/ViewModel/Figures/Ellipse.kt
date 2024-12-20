@@ -1,7 +1,7 @@
 package ViewModel.Figures
 
 import View.ICanvas
-import ViewModel.RectI
+import ViewModel.RectFloat
 import ViewModel.Shape
 import ViewModel.Styles.FillStyle
 import ViewModel.Styles.StrokeStyle
@@ -9,7 +9,7 @@ import ViewModel.Styles.StrokeStyle
 
 class Ellipse(
     id: String,
-    rect: RectI,
+    rect: RectFloat,
     strokeStyle: StrokeStyle,
     fillStyle: FillStyle,
     isSelect: Boolean
@@ -19,14 +19,14 @@ class Ellipse(
     private var mWidth = rect.width
     private var mHeight = rect.height
 
-    override fun setFrameImpl(frame: RectI) {
+    override fun setFrameImpl(frame: RectFloat) {
         mLeft += frame.left
         mTop += frame.top
-        mWidth += frame.width
-        mHeight += frame.height
+        mWidth *= frame.width
+        mHeight *= frame.height
     }
 
-    override fun getFrameImpl() = RectI(mLeft, mTop, mWidth, mHeight)
+    override fun getFrameImpl() = RectFloat(mLeft, mTop, mWidth, mHeight)
 
     override fun drawImpl(canvas: ICanvas) {
         canvas.drawEllipse(
@@ -37,7 +37,7 @@ class Ellipse(
         )
     }
 
-    override fun isPickImpl(x: Float, y: Float): Boolean {
+    override fun hitTestImpl(x: Float, y: Float): Boolean {
         val centerX = mLeft + mWidth / 2
         val centerY = mTop + mHeight / 2
 

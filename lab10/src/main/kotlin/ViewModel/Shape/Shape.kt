@@ -14,29 +14,30 @@ abstract class Shape(
     private var mStrokeStyle: StrokeStyle = strokeStyle
     private var mFillStyle: FillStyle = fillStyle
 
-    override fun getFrame(): RectI = getFrameImpl()
+    override fun getFrame(): RectFloat = getFrameImpl()
 
-    override fun setFrame(frame: RectI) {
+    override fun setFrame(frame: RectFloat): IShape {
         val oldFrame = getFrame()
 
         val offsetLeft = frame.left - oldFrame.left
         val offsetTop = frame.top - oldFrame.top
         val scaleWidth = frame.width / when {
-            oldFrame.width == 0 -> 1
+            oldFrame.width.toInt() == 0 -> 1f
             else -> oldFrame.width
         }
         val scaleHeight = frame.height / when {
-            oldFrame.height == 0 -> 1
+            oldFrame.height.toInt() == 0 -> 1f
             else -> oldFrame.height
         }
-        setFrameImpl(RectI(offsetLeft, offsetTop, scaleWidth, scaleHeight))
+        setFrameImpl(RectFloat(offsetLeft, offsetTop, scaleWidth, scaleHeight))
+        return this
     }
 
-    abstract override fun setFrameImpl(frame: RectI)
+    abstract override fun setFrameImpl(frame: RectFloat)
 
-    abstract override fun isPickImpl(x: Float, y: Float): Boolean
+    abstract override fun hitTestImpl(x: Float, y: Float): Boolean
 
-    abstract override fun getFrameImpl(): RectI
+    abstract override fun getFrameImpl(): RectFloat
 
     abstract override fun drawImpl(canvas: ICanvas)
 
@@ -69,7 +70,8 @@ abstract class Shape(
             canvas.lineTo(left, top + height)
             canvas.lineTo(left, top)
             canvas.endFill()
-            canvas.setStrokeWidth(1u)
+            canvas.setStrokeColor(Color.Black.value)
+            canvas.setStrokeWidth(2u)
             canvas.beginFill(Color.White.value)
             canvas.drawEllipse(left + width, top + height, SIZE_FRAME_POINTS, SIZE_FRAME_POINTS)
             canvas.endFill()
@@ -78,9 +80,9 @@ abstract class Shape(
         }
     }
 
-    override fun isPick(x: Float, y: Float): Boolean = isPickImpl(x, y)
+    override fun hitTest(x: Float, y: Float): Boolean = hitTestImpl(x, y)
 
     companion object {
-        const val SIZE_FRAME_POINTS = 7
+        const val SIZE_FRAME_POINTS = 7f
     }
 }

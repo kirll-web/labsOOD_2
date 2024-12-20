@@ -1,15 +1,14 @@
 package ViewModel.Figures
 
 import View.ICanvas
-import ViewModel.RectI
+import ViewModel.RectFloat
 import ViewModel.Shape
 import ViewModel.Styles.FillStyle
 import ViewModel.Styles.StrokeStyle
-import androidx.compose.ui.graphics.Color
 
 class Rectangle(
     id: String,
-    rect: RectI,
+    rect: RectFloat,
     strokeStyle: StrokeStyle,
     fillStyle: FillStyle,
     isSelect: Boolean
@@ -19,18 +18,18 @@ class Rectangle(
     private var mWidth = rect.width
     private var mHeight = rect.height
 
-    override fun setFrameImpl(frame: RectI) {
+    override fun setFrameImpl(frame: RectFloat) {
         mLeft += frame.left
         mTop += frame.top
-        mWidth += frame.width
-        mHeight += frame.height
+        mWidth *= frame.width
+        mHeight *= frame.height
     }
 
-    override fun isPickImpl(x: Float, y: Float): Boolean {
-        return x.toInt() in mLeft..mLeft + mWidth && y.toInt() in mTop..mTop + mHeight
+    override fun hitTestImpl(x: Float, y: Float): Boolean {
+        return x in mLeft..mLeft + mWidth && y in mTop..mTop + mHeight
     }
 
-    override fun getFrameImpl() = RectI(mLeft, mTop, mWidth, mHeight)
+    override fun getFrameImpl() = RectFloat(mLeft, mTop, mWidth, mHeight)
 
     override fun drawImpl(canvas: ICanvas) {
         canvas.moveTo(mLeft, mTop)

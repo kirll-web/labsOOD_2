@@ -1,10 +1,5 @@
 package ViewModel
 
-import Command.AddShapeCommand
-import Command.DeleteItemCommand
-import Command.MoveShapeCommand
-import Command.ResizeShapeCommand
-import History.History
 import Models.IModels
 import Models.ModelShape
 import ViewModel.Figures.Ellipse
@@ -35,7 +30,7 @@ interface IMenuViewModel {
 interface IComposeCanvasViewModel {
     val state: State<CanvasState>
     fun onDragStart(x: Float, y: Float)
-    fun onDrag(x: Float, y: Float)
+    fun onDrag(x: Float, y: Float, deltaX: Float, deltaY: Float)
     fun onDragEnd()
     fun selectShape(x: Float, y: Float)
     fun changeWindowSize(
@@ -50,20 +45,23 @@ data class CanvasState(
 
 class ComposeCanvasViewModel(
     private val dataModel: IModels,
-    private var windowWidth: Int,
-    private var windowHeight: Int,
-    private val defaultWidthShape: Int,
-    private val defaultHeightShape: Int
+    private var windowWidth: Float,
+    private var windowHeight: Float,
+    private val defaultWidthShape: Float,
+    private val defaultHeightShape: Float
 ) : IComposeCanvasViewModel, IMenuViewModel, ViewModel() {
     private val mSelectedShapeId = mutableStateOf<String?>(null)
     private val mCanvasState = mutableStateOf(CanvasState())
     private val viewModelScope = CoroutineScope(Job() + Dispatchers.IO)
     private var mDragEvent: OnDragEvent? = null
-    private val mHistory = History()
 
-    enum class OnDragEvent {
-        MOVE,
-        RESIZE
+
+    sealed class OnDragEvent(open val startX: Float, open val startY: Float) {
+        data class MOVE(override val startX: Float, override val startY: Float) :
+            OnDragEvent(startX, startY)
+
+        data class RESIZE(override val startX: Float, override val startY: Float) :
+            OnDragEvent(startX, startY)
     }
 
     override val state: State<CanvasState> = mCanvasState
@@ -79,7 +77,7 @@ class ComposeCanvasViewModel(
 
     override fun selectShape(x: Float, y: Float) {
         val selectedShape = mCanvasState.value.shapes.values.findLast {
-            it.isPick(x, y)
+            it.hitTest(x, y)
         }
 
         when (selectedShape?.id) {
@@ -96,31 +94,39 @@ class ComposeCanvasViewModel(
     }
 
     override fun onDragStart(x: Float, y: Float) {
-        mSelectedShapeId.value?.let { id ->
-            //мудрённая логика
-            mCanvasState.value.shapes[id]?.let { startedDragShape ->
+        val startedDragShape = mCanvasState.value.shapes.values.findLast {
+            it.hitTest(x, y) || (it.id == mSelectedShapeId.value && isHitResizebleCircle(x, y, it.getFrame()))
+        }
+
+        //fixme убрать двойное вычисление
+        when (startedDragShape) {
+            null -> unselectShape()
+            else -> {
+                if (startedDragShape.id != mSelectedShapeId.value) selectShape(x, y)
                 mDragEvent = when {
-                    startedDragShape.isPick(x,y) -> OnDragEvent.MOVE
+                    startedDragShape.hitTest(x, y) ->
+                        OnDragEvent.MOVE(
+                            x - startedDragShape.getFrame().left,
+                            y - startedDragShape.getFrame().top
+                        )
 
-                    (x > startedDragShape.getFrame().left + startedDragShape.getFrame().width &&
-                            x < startedDragShape.getFrame().left + startedDragShape.getFrame().width + Shape.SIZE_FRAME_POINTS &&
-                            y > startedDragShape.getFrame().top + startedDragShape.getFrame().height &&
-                            y < startedDragShape.getFrame().top + startedDragShape.getFrame().height + Shape.SIZE_FRAME_POINTS) -> OnDragEvent.RESIZE
+                    isHitResizebleCircle(x, y, startedDragShape.getFrame()) ->
+                        OnDragEvent.RESIZE(
+                            x,
+                            y
+                        )
 
-                    else -> {
-                        unselectShape()
-                        null
-                    }
+                    else -> null
                 }
             }
         }
-
     }
 
-    override fun onDrag(x: Float, y: Float) {
-        when (mDragEvent) {
-            OnDragEvent.RESIZE -> resizeShape(x, y)
-            OnDragEvent.MOVE -> moveShape(x, y)
+    override fun onDrag(x: Float, y: Float, deltaX: Float, deltaY: Float) {
+        val it = mDragEvent
+        when (it) {
+            is OnDragEvent.RESIZE -> resizeShape(x, y)
+            is OnDragEvent.MOVE -> moveShape(x - it.startX, y - it.startY)
             else -> Unit
         }
     }
@@ -143,8 +149,8 @@ class ComposeCanvasViewModel(
     }
 
     override fun changeWindowSize(width: Float, height: Float) {
-        windowWidth = width.toInt()
-        windowHeight = height.toInt()
+        windowWidth = width
+        windowHeight = height
     }
 
     override fun addRectangle() {
@@ -153,10 +159,10 @@ class ComposeCanvasViewModel(
             //fixme вынести в фабрику
             ModelShape.Rectangle(
                 UUID.randomUUID().toString(),
-                (windowWidth / 2 - defaultWidthShape / 2).toFloat(),
-                (windowHeight / 2 - defaultHeightShape / 2).toFloat(),
-                defaultWidthShape.toFloat(),
-                defaultHeightShape.toFloat(),
+                (windowWidth / 2 - defaultWidthShape / 2),
+                (windowHeight / 2 - defaultHeightShape / 2),
+                defaultWidthShape,
+                defaultHeightShape,
                 Color.Black.value
             )
         )
@@ -167,10 +173,10 @@ class ComposeCanvasViewModel(
         addShape(
             ModelShape.Ellipse(
                 UUID.randomUUID().toString(),
-                (windowWidth / 2 - defaultWidthShape / 2).toFloat(),
-                (windowHeight / 2 - defaultHeightShape / 2).toFloat(),
-                defaultWidthShape.toFloat(),
-                defaultHeightShape.toFloat(),
+                (windowWidth / 2 - defaultWidthShape / 2),
+                (windowHeight / 2 - defaultHeightShape / 2),
+                defaultWidthShape,
+                defaultHeightShape,
                 Color.Red.value
             )
         )
@@ -181,10 +187,10 @@ class ComposeCanvasViewModel(
         addShape(
             ModelShape.Triangle(
                 UUID.randomUUID().toString(),
-                (windowWidth / 2 - defaultWidthShape / 2).toFloat(),
-                (windowHeight / 2 - defaultHeightShape / 2).toFloat(),
-                defaultWidthShape.toFloat(),
-                defaultHeightShape.toFloat(),
+                (windowWidth / 2 - defaultWidthShape / 2),
+                (windowHeight / 2 - defaultHeightShape / 2),
+                defaultWidthShape,
+                defaultHeightShape,
                 Color.Green.value
             )
         )
@@ -192,9 +198,7 @@ class ComposeCanvasViewModel(
 
 
     private fun addShape(modelShape: ModelShape) {
-        mHistory.addAndExecuteCommand(
-            AddShapeCommand(dataModel, modelShape)
-        )
+        dataModel.addShape(modelShape)
     }
 
     private fun unselectShape() {
@@ -214,11 +218,7 @@ class ComposeCanvasViewModel(
     }
 
     private fun removeShapeById(id: String) {
-        mCanvasState.value.shapes[id]?.let { shape ->
-            mHistory.addAndExecuteCommand(
-                DeleteItemCommand(dataModel, shape.toModelShape(), mCanvasState.value.shapes.keys.indexOf(shape.id))
-            )
-        }
+        dataModel.removeShapeById(id)
     }
 
     override fun addImage() {
@@ -226,15 +226,11 @@ class ComposeCanvasViewModel(
     }
 
     override fun undo() {
-        if (mHistory.canUndo()) {
-            mHistory.undo()
-        }
+        dataModel.undo()
     }
 
     override fun redo() {
-        if (mHistory.canRedo()) {
-            mHistory.redo()
-        }
+        dataModel.redo()
     }
 
     private fun map(shapes: Map<String, ModelShape>?): CanvasState {
@@ -253,31 +249,24 @@ class ComposeCanvasViewModel(
     private fun moveShape(deltaX: Float, deltaY: Float) {
         mSelectedShapeId.value?.let { id ->
             mCanvasState.value.shapes[id]?.let { shape ->
-                mHistory.addAndExecuteCommand(
-                    MoveShapeCommand(
-                        {
-                            val newShape = shape.copy()
-                            newShape.setFrame(
-                                RectI(
-                                    shape.getFrame().left + deltaX.toInt(),
-                                    shape.getFrame().top + deltaY.toInt(),
-                                    0,
-                                    0
-                                )
-                            )
+                val newDeltaX = when {
+                    deltaX < 0 || deltaX + shape.getFrame().width > windowWidth -> shape.getFrame().left
+                    else -> deltaX
+                }
+                val newDeltaY = when {
+                    deltaY < 0 || deltaY + shape.getFrame().height > windowHeight -> shape.getFrame().top
+                    else -> deltaY
+                }
 
-                            val newFrame = newShape.getFrame()
-                            if (newFrame.left + newFrame.width > windowWidth ||
-                                newFrame.left < 0 ||
-                                newFrame.top < 0 ||
-                                newFrame.top + newFrame.height > windowHeight
-                            ) return@MoveShapeCommand
-                            dataModel.updateShape(newShape.toModelShape())
-                        },
-                        {
-                            dataModel.updateShape(shape.toModelShape())
-                        }
-                    )
+                dataModel.updateShape(
+                    shape.setFrame(
+                        RectFloat(
+                            newDeltaX,
+                            newDeltaY,
+                            shape.getFrame().width,
+                            shape.getFrame().height
+                        )
+                    ).toModelShape()
                 )
             }
         }
@@ -286,35 +275,42 @@ class ComposeCanvasViewModel(
     private fun resizeShape(deltaX: Float, deltaY: Float) {
         mSelectedShapeId.value?.let { id ->
             mCanvasState.value.shapes[id]?.let { shape ->
-                mHistory.addAndExecuteCommand(
-                    ResizeShapeCommand(
-                        {
-                            val newShape = shape.copy()
-                            newShape.setFrame(
-                                RectI(
-                                    shape.getFrame().left,
-                                    shape.getFrame().top,
-                                    shape.getFrame().width * deltaX.toInt(),
-                                    shape.getFrame().height * deltaY.toInt()
-                                )
-                            )
+                var newDeltaX = deltaX - shape.getFrame().left
+                var newDeltaY = deltaY - shape.getFrame().top
 
-                            if (newShape.getFrame().height <= 0
-                                || newShape.getFrame().width <= 0
-                            ) return@ResizeShapeCommand
-                            if (
-                                newShape.getFrame().height + newShape.getFrame().top > windowHeight
-                                || newShape.getFrame().width + shape.getFrame().left > windowWidth
-                            ) return@ResizeShapeCommand
-                            dataModel.updateShape(newShape.toModelShape())
-                        },
-                        {
-                            dataModel.updateShape(shape.toModelShape())
-                        }
+                newDeltaX = when {
+                    newDeltaX <= MIN_WIDTH_SHAPE || newDeltaX + shape.getFrame().left > windowWidth -> shape.getFrame().width
+                    else -> newDeltaX
+                }
+
+                newDeltaY = when {
+                    newDeltaY <= MIN_HEIGHT_SHAPE || newDeltaY + shape.getFrame().top > windowHeight -> shape.getFrame().height
+                    else -> newDeltaY
+                }
+
+                shape.setFrame(
+                    RectFloat(
+                        shape.getFrame().left,
+                        shape.getFrame().top,
+                        newDeltaX,
+                        newDeltaY
                     )
                 )
+
+                dataModel.updateShape(shape.toModelShape())
             }
         }
+    }
+
+    private fun isHitResizebleCircle(x: Float, y: Float, frame: RectFloat) =
+        (x > frame.left + frame.width &&
+                x < frame.left + frame.width + Shape.SIZE_FRAME_POINTS &&
+                y > frame.top + frame.height &&
+                y < frame.top + frame.height + Shape.SIZE_FRAME_POINTS)
+
+    companion object {
+        private const val MIN_WIDTH_SHAPE = 5f
+        private const val MIN_HEIGHT_SHAPE = 5f
     }
 }
 
@@ -323,11 +319,11 @@ fun ModelShape.toShape(
 ) = when (this) {
     is ModelShape.Rectangle -> Rectangle(
         this.id,
-        RectI(
-            x.toInt(),
-            y.toInt(),
-            width.toInt(),
-            height.toInt()
+        RectFloat(
+            x,
+            y,
+            width,
+            height
         ),
         StrokeStyle(
             0u,
@@ -341,11 +337,11 @@ fun ModelShape.toShape(
 
     is ModelShape.Ellipse -> Ellipse(
         this.id,
-        RectI(
-            x.toInt(),
-            y.toInt(),
-            width.toInt(),
-            height.toInt()
+        RectFloat(
+            x,
+            y,
+            width,
+            height
         ),
         StrokeStyle(
             0u,
@@ -361,14 +357,14 @@ fun ModelShape.toShape(
         this.id,
         TrianglePoints(
             leftBottom = Point(
-                x.toInt(), y.toInt() + height.toInt()
+                x, y + height
             ),
             top = Point(
-                x.toInt() + width.toInt() / 2, y.toInt()
+                x + width / 2, y
             ),
             rightBottom = Point(
-                x.toInt() + width.toInt(),
-                y.toInt() + height.toInt()
+                x + width,
+                y + height
             )
         ),
         StrokeStyle(
@@ -385,28 +381,28 @@ fun ModelShape.toShape(
 fun IShape.toModelShape() = when (this) {
     is Rectangle -> ModelShape.Rectangle(
         this.id,
-        this.getFrame().left.toFloat(),
-        this.getFrame().top.toFloat(),
-        this.getFrame().width.toFloat(),
-        this.getFrame().height.toFloat(),
+        this.getFrame().left,
+        this.getFrame().top,
+        this.getFrame().width,
+        this.getFrame().height,
         getFillStyle().getColor()?.let { Color(it).value } ?: Color.Black.value
     )
 
     is Ellipse -> ModelShape.Ellipse(
         this.id,
-        this.getFrame().left.toFloat(),
-        this.getFrame().top.toFloat(),
-        this.getFrame().width.toFloat(),
-        this.getFrame().height.toFloat(),
+        this.getFrame().left,
+        this.getFrame().top,
+        this.getFrame().width,
+        this.getFrame().height,
         getFillStyle().getColor()?.let { Color(it).value } ?: Color.Black.value
     )
 
     is Triangle -> ModelShape.Triangle(
         this.id,
-        this.getFrame().left.toFloat(),
-        this.getFrame().top.toFloat(),
-        this.getFrame().width.toFloat(),
-        this.getFrame().height.toFloat(),
+        this.getFrame().left,
+        this.getFrame().top,
+        this.getFrame().width,
+        this.getFrame().height,
         getFillStyle().getColor()?.let { Color(it).value } ?: Color.Black.value
     )
 
@@ -414,16 +410,16 @@ fun IShape.toModelShape() = when (this) {
 }
 
 fun IShape.copy(
-    x: Int? = null, y: Int? = null,
-    width: Int? = null,
-    height: Int? = null,
+    x: Float? = null, y: Float? = null,
+    width: Float? = null,
+    height: Float? = null,
     color: Color? = null,
     isSelect: Boolean? = null,
 ): IShape {
     return when (this) {
         is Rectangle -> Rectangle(
             id,
-            RectI(
+            RectFloat(
                 x ?: getFrame().left,
                 y ?: getFrame().top,
                 width ?: getFrame().width,
@@ -439,7 +435,7 @@ fun IShape.copy(
 
         is Ellipse -> Ellipse(
             this.id,
-            RectI(
+            RectFloat(
                 x ?: getFrame().left,
                 y ?: getFrame().top,
                 width ?: getFrame().width,
