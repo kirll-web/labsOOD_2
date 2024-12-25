@@ -1,4 +1,4 @@
-package ViewModel
+package ViewModel.ImageDialog
 
 import androidx.compose.ui.geometry.Offset
 

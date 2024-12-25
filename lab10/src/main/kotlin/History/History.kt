@@ -48,7 +48,12 @@ class History: ICommandExecutor {
                     }
 
                     //переписать условие большее понятно
-                    if (!(mCommands.isNotEmpty() && mCommands.last().tryMergeWith(command))) {
+                    if (mCommands.isNotEmpty()) {
+                        if (!mCommands.last().tryMergeWith(command)) {
+                            mCommands.addLast(command)
+                            ++mNextCommandIndex
+                        }
+                    } else {
                         mCommands.addLast(command)
                         ++mNextCommandIndex
                     }
@@ -62,6 +67,6 @@ class History: ICommandExecutor {
 
 
     companion object {
-        private const val MAX_COMMANDS_SIZE = 10
+        private const val MAX_COMMANDS_SIZE = 30
     }
 }

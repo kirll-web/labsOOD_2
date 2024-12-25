@@ -1,6 +1,7 @@
 package View
 
 import RGBAColor
+import androidx.compose.ui.graphics.ImageBitmap
 
 interface ICanvas {
     fun setStrokeWidth(width: UInt)
@@ -23,4 +24,10 @@ interface ICanvas {
         rx: Float,
         ry: Float
     )//. Рисует эллипс с центром в точке (cx, cy), rx - горизонтальный радиус, ry - вертикальный радиус. Эллипс рисуется текущим цветом. Текущая позиция рисования не меняется.
+
+    fun drawImage(
+        width: Float,
+        height: Float,
+        imgUrl: ImageBitmap
+    )
 }

@@ -1,13 +1,21 @@
 package View
 
 import RGBAColor
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import org.jetbrains.skia.Image as SkiaImage
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.res.loadImageBitmap
+import androidx.compose.ui.res.useResource
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
+import java.io.File
 
 sealed interface Primitive{
     class Ellipse(
@@ -53,4 +61,32 @@ sealed interface Primitive{
         val color: RGBAColor?,
         val strokeWidth: UInt
     ): Primitive
+
+    data class Image(
+        private val topLeft: Offset,
+        private val width: Float,
+        private val height: Float,
+        val imageBitmap: ImageBitmap,
+    ): Primitive {
+        private fun loadImageFromFile(filePath: String): ImageBitmap? {
+            return try {
+                val skiaImage = SkiaImage.makeFromEncoded(File(filePath).readBytes())
+                skiaImage.toComposeImageBitmap()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
+        }
+
+
+        fun draw(drawScope: DrawScope?) {
+            drawScope?.drawImage(
+                image =  imageBitmap,
+                srcOffset = IntOffset.Zero,
+                srcSize =  IntSize(imageBitmap.width, imageBitmap.height),
+                dstOffset = IntOffset(topLeft.x.toInt(), topLeft.y.toInt()),
+                dstSize = IntSize(width.toInt(), height.toInt()),
+            )
+        }
+    }
 }

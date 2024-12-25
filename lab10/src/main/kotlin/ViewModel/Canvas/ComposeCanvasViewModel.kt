@@ -1,34 +1,25 @@
-package ViewModel
+package ViewModel.Canvas
 
 import Models.IModels
-import Models.ModelShape
-import ViewModel.Figures.Ellipse
-import ViewModel.Figures.Rectangle
-import ViewModel.Figures.Triangle
-import ViewModel.Figures.TrianglePoints
+import Models.Models
+import Models.ModelsEvent
+import ViewModel.*
+import ViewModel.Figures.*
 import ViewModel.Styles.FillStyle
 import ViewModel.Styles.StrokeStyle
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import java.util.*
 
-interface IMenuViewModel {
-    fun addRectangle()
-    fun addEllipse()
-    fun addTriangle()
-    fun addImage()
-    fun tryDeleteSelectedShape(): Boolean
-    fun undo()
-    fun redo()
-}
-
 interface IComposeCanvasViewModel {
-    val state: State<CanvasState>
+    val state:  StateFlow<CanvasState>
+    val viewModelScope: CoroutineScope
     fun onDragStart(x: Float, y: Float)
     fun onDrag(x: Float, y: Float, deltaX: Float, deltaY: Float)
     fun onDragEnd()
@@ -47,12 +38,11 @@ class ComposeCanvasViewModel(
     private val dataModel: IModels,
     private var windowWidth: Float,
     private var windowHeight: Float,
-    private val defaultWidthShape: Float,
-    private val defaultHeightShape: Float
-) : IComposeCanvasViewModel, IMenuViewModel, ViewModel() {
-    private val mSelectedShapeId = mutableStateOf<String?>(null)
-    private val mCanvasState = mutableStateOf(CanvasState())
-    private val viewModelScope = CoroutineScope(Job() + Dispatchers.IO)
+    private val mapper: Mapper,
+    private val mSelectedShapeId: MutableState<String?>
+) : IComposeCanvasViewModel, ViewModel() {
+    private val mCanvasState = MutableStateFlow(CanvasState())
+    override  val viewModelScope = CoroutineScope(Job() + Dispatchers.IO)
     private var mDragEvent: OnDragEvent? = null
 
 
@@ -64,21 +54,40 @@ class ComposeCanvasViewModel(
             OnDragEvent(startX, startY)
     }
 
-    override val state: State<CanvasState> = mCanvasState
+    override val state: StateFlow<CanvasState> = mCanvasState
 
     init {
         viewModelScope.launch {
             delay(500)
             dataModel.shapes.onEach {
-                mCanvasState.value = map(it)
+                mCanvasState.value = mapper.mapToCanvasState(mCanvasState, mSelectedShapeId, it)
             }.launchIn(viewModelScope)
+
+            dataModel.events.onEach {
+                when (it){
+                    is ModelsEvent.SelectShape -> mSelectedShapeId.value = it.id
+                    else -> Unit
+                }.also {
+                    mCanvasState.value = mapper.mapToCanvasState(mCanvasState, mSelectedShapeId)
+                }
+            }.launchIn(viewModelScope)
+
         }
+
     }
 
     override fun selectShape(x: Float, y: Float) {
-        val selectedShape = mCanvasState.value.shapes.values.findLast {
-            it.hitTest(x, y)
+        var selectedShape = mCanvasState.value.shapes.values.findLast {
+            val isTargetShape = it is TargetShape && isHitResizebleCircle(
+                x,
+                y,
+                it.getFrame()
+            )
+            if (!isTargetShape) (it !is TargetShape && it.hitTest(x, y)) else isTargetShape
         }
+
+        if (selectedShape is TargetShape) selectedShape =
+            mCanvasState.value.shapes[mSelectedShapeId.value]
 
         when (selectedShape?.id) {
             null -> unselectShape()
@@ -86,17 +95,55 @@ class ComposeCanvasViewModel(
             mSelectedShapeId.value -> return
 
             else -> {
-                unselectShape()
                 mSelectedShapeId.value = selectedShape.id
-                dataModel.updateShape(selectedShape.toModelShape())
+                mCanvasState.value = CanvasState(
+                    shapes = mCanvasState.value.shapes.toMutableMap().apply {
+                        this.values.findLast { it is TargetShape }?.let {  oldTargetShape ->
+                            this.remove(oldTargetShape.id)
+                        }
+
+
+                        val id = mSelectedShapeId.value
+                        val shape = this[id]
+
+                        if (id != null && shape != null) {
+                            val idFrame = UUID.randomUUID().toString()
+                            val frame = shape.getFrame()
+                            this[idFrame] = TargetShape(
+                                idFrame,
+                                RectFloat(
+                                    frame.left,
+                                    frame.top,
+                                    frame.width,
+                                    frame.height
+                                ),
+                                StrokeStyle(0u, null),
+                                FillStyle(null),
+                                false
+                            )
+                        }
+                        println(this)
+
+                    }.toMutableMap()
+                )
+                println(mCanvasState.value.shapes)
             }
         }
     }
 
     override fun onDragStart(x: Float, y: Float) {
-        val startedDragShape = mCanvasState.value.shapes.values.findLast {
-            it.hitTest(x, y) || (it.id == mSelectedShapeId.value && isHitResizebleCircle(x, y, it.getFrame()))
+        var startedDragShape = mCanvasState.value.shapes.values.findLast {
+            val isTargetShape = it is TargetShape && isHitResizebleCircle(
+                x,
+                y,
+                it.getFrame()
+            )
+            if (!isTargetShape) (it !is TargetShape && it.hitTest(x, y)) else isTargetShape
         }
+
+
+        if (startedDragShape is TargetShape) startedDragShape =
+            mCanvasState.value.shapes[mSelectedShapeId.value]
 
         //fixme убрать двойное вычисление
         when (startedDragShape) {
@@ -135,70 +182,10 @@ class ComposeCanvasViewModel(
         mDragEvent = null
     }
 
-    override fun tryDeleteSelectedShape(): Boolean {
-        val id = mSelectedShapeId.value
-        return when {
-            id != null -> {
-                mSelectedShapeId.value = null
-                removeShapeById(id)
-                true
-            }
-
-            else -> false
-        }
-    }
 
     override fun changeWindowSize(width: Float, height: Float) {
         windowWidth = width
         windowHeight = height
-    }
-
-    override fun addRectangle() {
-        unselectShape()
-        addShape(
-            //fixme вынести в фабрику
-            ModelShape.Rectangle(
-                UUID.randomUUID().toString(),
-                (windowWidth / 2 - defaultWidthShape / 2),
-                (windowHeight / 2 - defaultHeightShape / 2),
-                defaultWidthShape,
-                defaultHeightShape,
-                Color.Black.value
-            )
-        )
-    }
-
-    override fun addEllipse() {
-        unselectShape()
-        addShape(
-            ModelShape.Ellipse(
-                UUID.randomUUID().toString(),
-                (windowWidth / 2 - defaultWidthShape / 2),
-                (windowHeight / 2 - defaultHeightShape / 2),
-                defaultWidthShape,
-                defaultHeightShape,
-                Color.Red.value
-            )
-        )
-    }
-
-    override fun addTriangle() {
-        unselectShape()
-        addShape(
-            ModelShape.Triangle(
-                UUID.randomUUID().toString(),
-                (windowWidth / 2 - defaultWidthShape / 2),
-                (windowHeight / 2 - defaultHeightShape / 2),
-                defaultWidthShape,
-                defaultHeightShape,
-                Color.Green.value
-            )
-        )
-    }
-
-
-    private fun addShape(modelShape: ModelShape) {
-        dataModel.addShape(modelShape)
     }
 
     private fun unselectShape() {
@@ -207,43 +194,15 @@ class ComposeCanvasViewModel(
         shapeId?.let { id ->
             val shape = mCanvasState.value.shapes[id]
             shape?.let {
-                mCanvasState.value.shapes
-                    .minus(shape.id)
-                    .plus(shapeId to shape.copy(isSelect = false))
-                    .values.forEach { sh ->
-                        dataModel.updateShape(sh.toModelShape())
+                mCanvasState.value = CanvasState(
+                    shapes = mCanvasState.value.shapes.toMutableMap().also { shapes ->
+                        shapes.values.findLast { it is TargetShape }?.id?.let { id ->
+                            shapes.remove(id)
+                        }
                     }
+                )
             }
         }
-    }
-
-    private fun removeShapeById(id: String) {
-        dataModel.removeShapeById(id)
-    }
-
-    override fun addImage() {
-        TODO("Not yet implemented")
-    }
-
-    override fun undo() {
-        dataModel.undo()
-    }
-
-    override fun redo() {
-        dataModel.redo()
-    }
-
-    private fun map(shapes: Map<String, ModelShape>?): CanvasState {
-        var isHasSelected = false
-        val canvasState = mCanvasState.value.copy(
-            shapes = shapes?.map { item ->
-                val isSelect = item.key == mSelectedShapeId.value
-                if (isSelect) isHasSelected = true
-                item.key to item.value.toShape(isSelect)
-            }?.toMap() ?: mCanvasState.value.shapes
-        )
-        if (!isHasSelected) mSelectedShapeId.value = null
-        return canvasState
     }
 
     private fun moveShape(deltaX: Float, deltaY: Float) {
@@ -258,7 +217,7 @@ class ComposeCanvasViewModel(
                     else -> deltaY
                 }
 
-                dataModel.updateShape(
+                mapper.mapToModelShape(
                     shape.setFrame(
                         RectFloat(
                             newDeltaX,
@@ -266,8 +225,11 @@ class ComposeCanvasViewModel(
                             shape.getFrame().width,
                             shape.getFrame().height
                         )
-                    ).toModelShape()
-                )
+                    )
+                )?.let {
+                    mSelectedShapeId.value = shape.id
+                    dataModel.moveShape(it)
+                }
             }
         }
     }
@@ -297,7 +259,10 @@ class ComposeCanvasViewModel(
                     )
                 )
 
-                dataModel.updateShape(shape.toModelShape())
+                mapper.mapToModelShape(shape)?.let {
+                    mSelectedShapeId.value = shape.id
+                    dataModel.resizeShape(it)
+                }
             }
         }
     }
@@ -314,100 +279,6 @@ class ComposeCanvasViewModel(
     }
 }
 
-fun ModelShape.toShape(
-    isSelect: Boolean? = null
-) = when (this) {
-    is ModelShape.Rectangle -> Rectangle(
-        this.id,
-        RectFloat(
-            x,
-            y,
-            width,
-            height
-        ),
-        StrokeStyle(
-            0u,
-            null
-        ),
-        FillStyle(
-            color
-        ),
-        isSelect ?: false
-    )
-
-    is ModelShape.Ellipse -> Ellipse(
-        this.id,
-        RectFloat(
-            x,
-            y,
-            width,
-            height
-        ),
-        StrokeStyle(
-            0u,
-            null
-        ),
-        FillStyle(
-            color
-        ),
-        isSelect ?: false
-    )
-
-    is ModelShape.Triangle -> Triangle(
-        this.id,
-        TrianglePoints(
-            leftBottom = Point(
-                x, y + height
-            ),
-            top = Point(
-                x + width / 2, y
-            ),
-            rightBottom = Point(
-                x + width,
-                y + height
-            )
-        ),
-        StrokeStyle(
-            0u,
-            null
-        ),
-        FillStyle(
-            color
-        ),
-        isSelect ?: false
-    )
-}
-
-fun IShape.toModelShape() = when (this) {
-    is Rectangle -> ModelShape.Rectangle(
-        this.id,
-        this.getFrame().left,
-        this.getFrame().top,
-        this.getFrame().width,
-        this.getFrame().height,
-        getFillStyle().getColor()?.let { Color(it).value } ?: Color.Black.value
-    )
-
-    is Ellipse -> ModelShape.Ellipse(
-        this.id,
-        this.getFrame().left,
-        this.getFrame().top,
-        this.getFrame().width,
-        this.getFrame().height,
-        getFillStyle().getColor()?.let { Color(it).value } ?: Color.Black.value
-    )
-
-    is Triangle -> ModelShape.Triangle(
-        this.id,
-        this.getFrame().left,
-        this.getFrame().top,
-        this.getFrame().width,
-        this.getFrame().height,
-        getFillStyle().getColor()?.let { Color(it).value } ?: Color.Black.value
-    )
-
-    else -> throw IllegalArgumentException("Unknowed figure")
-}
 
 fun IShape.copy(
     x: Float? = null, y: Float? = null,
@@ -471,6 +342,25 @@ fun IShape.copy(
                 else -> FillStyle(color.value)
             },
             isSelect ?: this.isSelect
+        )
+
+
+        is Image -> Image(
+            this.id,
+            RectFloat(
+                x ?: getFrame().left,
+                y ?: getFrame().top,
+                width ?: getFrame().width,
+                height ?: getFrame().height
+            ),
+            getStrokeStyle(),
+            when (color) {
+                null -> getFillStyle()
+                else -> FillStyle(color.value)
+            },
+            isSelect ?: this.isSelect,
+            imgUrl,
+            imageBitmap
         )
 
         else -> {
