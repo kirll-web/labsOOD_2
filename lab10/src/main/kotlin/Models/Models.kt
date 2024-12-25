@@ -215,7 +215,7 @@ class Models(
     }
 
     override fun saveFile(filePath: String) {
-        val jsonConverter = JsonConverter()
+        val jsonConverter = JsonConverter(mapper)
         modelShapeReader.read(mShapes.value.values.toList(), jsonConverter)
             val s = jsonConverter.getModelShapeJson()
         s?.let { File(filePath).writeText(it) }

@@ -2,7 +2,7 @@ package utils
 
 import Models.ModelShape
 import Models.ModelShapeJson
-import Models.mapToJson
+import ViewModel.IJsonMapper
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
@@ -13,12 +13,14 @@ interface IConverter<T> {
     fun convert(data: T)
 }
 
-class JsonConverter : IConverter<ModelShape> {
+class JsonConverter(
+    private val mapperToJson: IJsonMapper<ModelShape, ModelShapeJson>
+) : IConverter<ModelShape> {
     private val mGson: Gson = GsonBuilder().setPrettyPrinting().create()
     private val mJsonObject = JsonObject()
 
     override fun convert(data: ModelShape) {
-        val shape = mapToJson(data)
+        val shape = mapperToJson.mapToJson(data)
         mJsonObject.add(data.id,  mGson.toJsonTree(shape))
     }
 
