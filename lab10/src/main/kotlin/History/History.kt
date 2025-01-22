@@ -33,27 +33,21 @@ class History: ICommandExecutor {
                 removeCommands.forEach {
                     it.removeCommand()
                 }
-                mCommands = mCommands.slice(0 until  mNextCommandIndex).toMutableList()
+                val commands = mCommands.slice(0 until  mNextCommandIndex).toMutableList()
+                commands.addLast(command)
+                mCommands = commands
                 ++mNextCommandIndex
-                mCommands.addLast(command)
             }
 
             else -> {
                 try {
                     command.execute()
                     if(mCommands.size == MAX_COMMANDS_SIZE) {
-                        val command = mCommands.removeFirst()
-                        command.removeCommand()
+                        mCommands.removeFirst().removeCommand()
                         --mNextCommandIndex
                     }
 
-                    //переписать условие большее понятно
-                    if (mCommands.isNotEmpty()) {
-                        if (!mCommands.last().tryMergeWith(command)) {
-                            mCommands.addLast(command)
-                            ++mNextCommandIndex
-                        }
-                    } else {
+                    if (!(mCommands.isNotEmpty() && mCommands.last().tryMergeWith(command))) {
                         mCommands.addLast(command)
                         ++mNextCommandIndex
                     }

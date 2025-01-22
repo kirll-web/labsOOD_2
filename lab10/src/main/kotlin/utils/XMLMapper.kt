@@ -1,28 +1,16 @@
-package ViewModel
+package utils
 
 import Models.ModelShape
-import Models.ModelShapeJson
-import ViewModel.Canvas.CanvasState
-import ViewModel.Figures.*
-import ViewModel.Styles.FillStyle
-import ViewModel.Styles.StrokeStyle
-import androidx.compose.runtime.MutableState
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.res.loadImageBitmap
-import kotlinx.coroutines.flow.MutableStateFlow
-import java.io.File
-import java.util.*
 
-interface IJsonMapper <T, K> {
-    fun mapToJson(shape: T): K
-    fun mapFromJson(shape: K): T
+interface IXMLMapper <T, K> {
+    fun mapToXML(shape: T): K
+    fun mapFromXML(shape: K): T
 }
 
-class JsonMapper: IJsonMapper<ModelShape, ModelShapeJson> {
-    override fun mapToJson(shape: ModelShape) = when (shape) {
+class XMLMapper: IXMLMapper<ModelShape, ModelShapeXML> {
+    override fun mapToXML(shape: ModelShape) = when (shape) {
         is ModelShape.Image -> {
-            ModelShapeJson(
+            ModelShapeXML(
                 id = shape.id,
                 type = shape::class.simpleName.toString(),
                 x = shape.x,
@@ -33,7 +21,7 @@ class JsonMapper: IJsonMapper<ModelShape, ModelShapeJson> {
                 shape.url //FIXME MOCK
             )
         }
-        else -> ModelShapeJson(
+        else -> ModelShapeXML(
             id = shape.id,
             type = shape::class.simpleName.toString(),
             x = shape.x,
@@ -44,7 +32,8 @@ class JsonMapper: IJsonMapper<ModelShape, ModelShapeJson> {
             null //FIXME MOCK
         )
     }
-    override fun mapFromJson(shape: ModelShapeJson) = when (shape.type) {
+
+    override fun mapFromXML(shape: ModelShapeXML) = when (shape.type) {
         ModelShape.Ellipse::class.simpleName -> ModelShape.Ellipse(
             id = shape.id,
             x = shape.x,

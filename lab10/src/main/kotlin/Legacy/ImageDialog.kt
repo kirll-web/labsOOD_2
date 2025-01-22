@@ -1,6 +1,6 @@
-package View
+package Legacy
 
-import ViewModel.ImageDialog.IImageDialogViewModel
+import Legacy.ImageDialog2.IImageDialogViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource

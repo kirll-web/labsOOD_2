@@ -1,8 +1,7 @@
 package ViewModel.Canvas
 
-import Models.IModels
-import Models.Models
-import Models.ModelsEvent
+import Models.IModelShapes
+import Models.ModelShapesEvent
 import ViewModel.*
 import ViewModel.Figures.*
 import ViewModel.Styles.FillStyle
@@ -35,7 +34,7 @@ data class CanvasState(
 )
 
 class ComposeCanvasViewModel(
-    private val dataModel: IModels,
+    private val dataModel: IModelShapes,
     private var windowWidth: Float,
     private var windowHeight: Float,
     private val mapper: Mapper,
@@ -64,8 +63,9 @@ class ComposeCanvasViewModel(
             }.launchIn(viewModelScope)
 
             dataModel.events.onEach {
+                println("event")
                 when (it){
-                    is ModelsEvent.SelectShape -> mSelectedShapeId.value = it.id
+                    is ModelShapesEvent.SelectShape -> mSelectedShapeId.value = it.id
                     else -> Unit
                 }.also {
                     mCanvasState.value = mapper.mapToCanvasState(mCanvasState, mSelectedShapeId)

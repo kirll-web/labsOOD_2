@@ -4,8 +4,8 @@ abstract class FunctionalCommand(
     doExecute: () -> Unit,
     doUnexecute: () -> Unit
 ): AbstractCommand() {
-    private var mDoExecute = doExecute
-    private var mDoUnexecute = doUnexecute
+    protected var mDoExecute = doExecute
+    protected var mDoUnexecute = doUnexecute
 
     override fun doExecute() {
         mDoExecute()

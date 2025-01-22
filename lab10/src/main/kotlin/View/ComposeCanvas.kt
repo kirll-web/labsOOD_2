@@ -1,8 +1,8 @@
 package View
 
+import Legacy.ImageDialog2.getOffset
 import RGBAColor
 import ViewModel.Canvas.IComposeCanvasViewModel
-import ViewModel.ImageDialog.getOffset
 import ViewModel.Point
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -12,12 +12,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
@@ -38,7 +40,7 @@ class ComposeCanvas(
         viewModel.viewModelScope.launch {
             delay(500)
             viewModel.state.onEach {
-                println("обновился viewModel")
+                delay(10)
                 mShapes = emptyList()
                 it.shapes.values.forEach { shape ->
                     shape.draw(this@ComposeCanvas)
@@ -150,7 +152,7 @@ class ComposeCanvas(
             }
         }) {
             Canvas(
-                Modifier.fillMaxSize().pointerInput(Unit) {
+                Modifier.fillMaxSize().graphicsLayer().pointerInput(Unit) {
                     detectDragGestures(
                         onDragStart = { dragAmount ->
                             viewModel.onDragStart(dragAmount.x, dragAmount.y)
@@ -166,9 +168,7 @@ class ComposeCanvas(
                             )
                         }
                     )
-
                 }) {
-
                 viewModel.changeWindowSize(this.size.width, this.size.height)
                 var path: Path? = null
 

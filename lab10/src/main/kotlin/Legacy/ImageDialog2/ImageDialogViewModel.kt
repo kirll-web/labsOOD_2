@@ -1,7 +1,7 @@
-package ViewModel.ImageDialog
+package Legacy.ImageDialog2
 
-import Models.IModels
-import Models.ModelsEvent
+import Models.IModelShapes
+import Models.ModelShapesEvent
 import ViewModel.ShapeFactory.IModelShapeFactory
 import ViewModel.ShapeFactory.ShapeType
 import androidx.compose.runtime.MutableState
@@ -21,7 +21,7 @@ interface IImageDialogViewModel {
 }
 
 class ImageDialogViewModel(
-    private val dataModel: IModels,
+    private val dataModel: IModelShapes,
     private val shapeFactory: IModelShapeFactory
 ) : IImageDialogViewModel, ViewModel() {
     private var mIsDialogVisible = mutableStateOf(false)
@@ -35,8 +35,8 @@ class ImageDialogViewModel(
             delay(500)
             dataModel.events.onEach { event ->
                 when (event) {
-                    ModelsEvent.AddShapeError -> setErrorMessage("Ошибка: Не удалось создать файл")
-                    ModelsEvent.ShapeHasBeenAdded -> hide()
+                    ModelShapesEvent.AddShapeError -> setErrorMessage("Ошибка: Не удалось создать файл")
+                    ModelShapesEvent.ShapeHasBeenAdded -> hide()
                     else -> Unit
                 }
             }.launchIn(viewModelScope)

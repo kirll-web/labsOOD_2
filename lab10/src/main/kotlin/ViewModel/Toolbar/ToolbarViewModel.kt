@@ -1,8 +1,8 @@
 package ViewModel.Toolbar
 
-import Models.IModels
+import Models.IModelShapes
 import Models.ModelShape
-import Models.ModelsEvent
+import Models.ModelShapesEvent
 import ViewModel.ShapeFactory.IModelShapeFactory
 import ViewModel.ShapeFactory.ShapeType
 import androidx.compose.runtime.MutableState
@@ -49,7 +49,7 @@ data class ToolbarState(
 )
 
 class ToolbarViewModel(
-    private val dataModel: IModels,
+    private val dataModel: IModelShapes,
     private val mSelectedShapeId: MutableState<String?>,
     private val shapeFactory: IModelShapeFactory
 ) : IToolbarViewModel, ViewModel() {
@@ -63,14 +63,22 @@ class ToolbarViewModel(
             delay(500)
             dataModel.events.onEach {
                 when (it) {
-                    ModelsEvent.OpenFileError -> mState.value = mState.value.copy(
+                    ModelShapesEvent.OpenFileError -> mState.value = mState.value.copy(
                         openedFromFile = false,
                         fileUrl = null
                     )
-                    is ModelsEvent.OpenFileSuccess -> {
+                    is ModelShapesEvent.OpenFileSuccess -> {
                         mState.value = mState.value.copy(
                             openedFromFile = true,
                             fileUrl = it.fileUrl
+                        )
+                        mSelectedShapeId.value = null
+                    }
+
+                    is ModelShapesEvent.ParsingFileError -> {
+                        mState.value = mState.value.copy(
+                            openedFromFile = false,
+                            fileUrl = null
                         )
                         mSelectedShapeId.value = null
                     }

@@ -70,19 +70,19 @@ class Toolbar(
             }) {
                 BasicText("open", style = TextStyle(color = Color.White))
             }
-
+            Spacer(modifier = Modifier.width(8.dp))
             Button(onClick = {
                 viewModel.viewModelScope.launch { viewModel.save() }
             }) {
                 BasicText("save", style = TextStyle(color = Color.White))
             }
-
+            Spacer(modifier = Modifier.width(8.dp))
             Button(onClick = {
                 viewModel.viewModelScope.launch { viewModel.saveAs() }
             }) {
                 BasicText("save as", style = TextStyle(color = Color.White))
             }
-
+            Spacer(modifier = Modifier.width(8.dp))
             Button(onClick = {
                 viewModel.addRectangle()
             }) {
