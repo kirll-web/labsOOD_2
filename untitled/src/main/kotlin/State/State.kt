@@ -7,7 +7,7 @@ interface IState {
 }
 
 class PauseState(
-    private val context: IAudioPlayerImpl
+    private val context: IAudioPlayerButtonImpl
 ): IState {
     override fun display() {
         println("audio playback stopped")
@@ -19,7 +19,7 @@ class PauseState(
 }
 
 class PlayState(
-    private val context: IAudioPlayerImpl
+    private val context: IAudioPlayerButtonImpl
 ): IState {
     override fun display() {
         println("audio playback is active")
@@ -30,19 +30,19 @@ class PlayState(
     }
 }
 
-interface IAudioPlayer {
+interface IAudioPlayerButton {
     fun print()
     fun click()
 }
 
-interface IAudioPlayerImpl {
+interface IAudioPlayerButtonImpl {
     fun setPauseState()
     fun setPlayState()
 }
 
-class AudioPlayerButton(): IAudioPlayer {
+class AudioPlayerButton(): IAudioPlayerButton {
     //внутренний приват объект aka class
-    private val audioPlayerImpl: IAudioPlayerImpl = object: IAudioPlayerImpl {
+    private val audioPlayerImpl: IAudioPlayerButtonImpl = object: IAudioPlayerButtonImpl {
         override fun setPauseState() {
             mState = pauseState
         }
