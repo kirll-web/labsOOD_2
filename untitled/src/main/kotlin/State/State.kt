@@ -53,8 +53,9 @@ class AudioPlayerButton(): IAudioPlayerButton {
             context.mState = context.playState
         }
     }
-    private val pauseState = PauseState(AudioPlayerButtonImpl(this))
-    private val playState = PlayState(AudioPlayerButtonImpl(this))
+    private val mAudioPlayerButtonImlp = AudioPlayerButtonImpl(this)
+    private val pauseState = PauseState(mAudioPlayerButtonImlp)
+    private val playState = PlayState(mAudioPlayerButtonImlp)
 
 
     //можно через внутренний объект, который реализует интерфейс
