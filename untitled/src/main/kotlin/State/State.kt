@@ -41,8 +41,24 @@ interface IAudioPlayerButtonImpl {
 }
 
 class AudioPlayerButton(): IAudioPlayerButton {
-    //внутренний приват объект aka class
-    private val audioPlayerImpl: IAudioPlayerButtonImpl = object: IAudioPlayerButtonImpl {
+    //внутренний приваттный класс
+    class AudioPlayerButtonImpl(
+        private val context: AudioPlayerButton
+    ): IAudioPlayerButtonImpl {
+        override fun setPauseState() {
+            context.mState = context.pauseState
+        }
+
+        override fun setPlayState() {
+            context.mState = context.playState
+        }
+    }
+    private val pauseState = PauseState(AudioPlayerButtonImpl(this))
+    private val playState = PlayState(AudioPlayerButtonImpl(this))
+
+
+    //можно через внутренний объект, который реализует интерфейс
+   /* private val audioPlayerImpl: IAudioPlayerButtonImpl = object: IAudioPlayerButtonImpl {
         override fun setPauseState() {
             mState = pauseState
         }
@@ -51,9 +67,10 @@ class AudioPlayerButton(): IAudioPlayerButton {
             mState = playState
         }
     }
-
     private val pauseState = PauseState(audioPlayerImpl)
     private val playState = PlayState(audioPlayerImpl)
+    */
+
     private var mState: IState = pauseState
 
 
