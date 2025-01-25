@@ -98,13 +98,77 @@ ipch/
 .vscode/
 
 # NuGet Packages
-packages/
-**/packages/*
-!**/packages/repositories.config
+# Visual Studio
+.vscode/
+.vs/
+*.vcxproj*
+*.vcxproj.filters
+*.vcxproj.user
+*.sln
+*.suo
+*.user
+*.db
+*.opendb
+*.VC.opendb
+*.VC.db
 
-# Build Tools
-node_modules/
+# Build files
+[Bb]uild/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+ARM/
+ARM64/
+*.obj
+*.exe
+*.dll
+*.lib
+*.pdb
+*.idb
+*.log
+*.tlog
+*.lastbuildstate
+*.unsuccessfulbuild
+*.o
+*.ilk
 
-# MacOS
+# Intermediate files
+ipch/
+*.pch
+*.ipdb
+
+# Backup files
+*.bak
+*.tmp
+*.temp
+
+# CMake
+CMakeLists.txt.user
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Crash dumps
+*.mdmp
+*.dmp
+
+# System files
 .DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor-specific
+.idea/
+*.code-workspace
+
+# Other
+*.log
+*.cache
+*.pyc
+*.class
+*.out
+*.swp
+*.swo
 
