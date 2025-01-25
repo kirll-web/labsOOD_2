@@ -71,15 +71,15 @@ public:
 class Waiter
 {
 public:
-    Waiter() : pizzaBuilder(nullptr) {}
+    Waiter() : mPizzaBuilder(nullptr) {}
     ~Waiter() {}
 
-    void SetPizzaBuilder(PizzaBuilder* b) { pizzaBuilder = b; }
+    void SetPizzaBuilder(PizzaBuilder* b) { mPizzaBuilder = b; }
     std::shared_ptr<Pizza> GetPizza() 
     {
-        if (pizzaBuilder)
+        if (mPizzaBuilder)
         {
-            return pizzaBuilder->GetPizza();
+            return mPizzaBuilder->GetPizza();
         }
         else
         {
@@ -89,12 +89,12 @@ public:
 
     void ConstructPizza()
     {
-        if (pizzaBuilder)
+        if (mPizzaBuilder)
         {
-            pizzaBuilder->createNewPizzaProduct();
-            pizzaBuilder->buildDough();
-            pizzaBuilder->buildSauce();
-            pizzaBuilder->buildTopping();
+            mPizzaBuilder->createNewPizzaProduct();
+            mPizzaBuilder->buildDough();
+            mPizzaBuilder->buildSauce();
+            mPizzaBuilder->buildTopping();
         }
         else
         {
@@ -103,7 +103,7 @@ public:
 
     }
 private:
-    PizzaBuilder* pizzaBuilder;
+    PizzaBuilder* mPizzaBuilder;
 };
 
 // Клиент заказывает две пиццы.
